@@ -1,0 +1,16 @@
+{
+  "name": "bahanbaku-api",
+  "version": "1.0.0",
+  "description": "an app which connects Android and Machine Learning for BahanbaKu",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "BahanbaKu Team",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1"
+  }
+}
