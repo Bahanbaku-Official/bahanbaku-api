@@ -1,0 +1,1647 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "BahanBaku RESTful API Documentation",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost",
+      "description": "BahanBaku RESTful API Server"
+    }
+  ],
+  "paths": {
+    "/user/register": {
+      "post": {
+        "summary": "Create a new user",
+        "description": "Create a new user in database",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/user"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Register Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "user successfully created"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          }
+        }
+      }
+    },
+    "/user/login": {
+      "post": {
+        "summary": "User login to application",
+        "description": "Verify user credentials",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "format": "password"
+                  }
+                }
+              },
+              "example": {
+                "email": "testing@gmail.com",
+                "password": "testing123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "token": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "user successfully login",
+                  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          }
+        }
+      }
+    },
+    "/user/profile": {
+      "get": {
+        "summary": "Get user information",
+        "description": "Get user information from database",
+        "responses": {
+          "200": {
+            "description": "Success get profile information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/userProfile"
+                },
+                "example": {
+                  "id": "eJXCDdzd",
+                  "username": "testing",
+                  "email": "testing@gmail.com",
+                  "picture": "http://cloud-storage/profile/eJXCDdzd.png",
+                  "origin": [-9.424724, 105.2290617],
+                  "shipping": [
+                    {
+                      "gJDNQCOC": 10000
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        },
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ]
+      }
+    },
+    "/user/edit": {
+      "put": {
+        "summary": "Edit user information",
+        "description": "Edit user information in database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/user"
+              },
+              "example": {
+                "username": "changed username",
+                "email": "testing@gmail.com",
+                "password": "testing123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success edit user information",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success edit user"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/edit-password": {
+      "put": {
+        "summary": "Edit user's password information",
+        "description": "Edit user's password in database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/userPassword"
+              },
+              "example": {
+                "current-password": "testing123",
+                "new-password": "admin123",
+                "new-password-confirmation": "admin123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success edit user's password",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success edit password"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/update-location": {
+      "get": {
+        "summary": "Update user location",
+        "description": "Update user information coordinate and store in database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success edit user's location and shipping cost",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success update user location"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/user/upload-picture": {
+      "post": {
+        "summary": "Edit user profile image",
+        "description": "Edit user profile image in database",
+        "responses": {},
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "/user/delete/{id}": {
+      "delete": {
+        "summary": "Delete user (admin only) ",
+        "description": "Delete user from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success delete user based on ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success delete user"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/recipe": {
+      "get": {
+        "summary": "Get all recipes",
+        "description": "Get all recipes by default",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "description": "Food name",
+            "required":false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "featured",
+            "description": "Get featured recipe",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": -1
+            }
+          },
+          {
+            "name": "new",
+            "description": "Get new food",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "maximum": 2,
+              "minimum": -1
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success get all recipe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/recipeArray"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/recipe/{id}": {
+      "get": {
+        "summary": "Get recipe by ID",
+        "description": "Get recipe information by ID from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success get recipe by specified ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/recipeWithId"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/recipe/create": {
+      "post": {
+        "summary": "Add recipe (admin only)",
+        "description": "Add recipes to database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/recipe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success create recipe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "id": {
+                      "$ref": "#/components/schemas/id"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success create recipe",
+                  "id": "pQLi6pat"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/recipe/update/{id}": {
+      "put": {
+        "summary": "Update a recipe (admin only)",
+        "description": "Update a recipe information by ID to database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/recipe"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success update recipe",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "id": {
+                      "$ref": "#/components/schemas/id"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success update recipe",
+                  "id": "pQLi6pat"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/recipe/delete/{id}": {
+      "delete": {
+        "summary": "Delete recipe by ID (admin only)",
+        "description": "Delete recipe information by ID from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success delete recipe by ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success delete recipe"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/ingredient": {
+      "get": {
+        "summary": "Get ingredients by name",
+        "description": "Get ingredient information by name from supplier and e-commerce",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "search",
+            "description": "Ingredients name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {}
+      }
+    },
+    "/supplier": {
+      "get": {
+        "summary": "Get all supplier (admin only)",
+        "description": "Get all supplier information from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success delete recipe by ID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "results": {
+                      "$ref": "#/components/schemas/supplierArray"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success get suppliers",
+                  "results": [
+                    {
+                      "id": "gJDNQCOC",
+                      "name": "Warung Toni",
+                      "origin": [-7.424724, 109.2290617],
+                      "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
+                      "address-obj": {
+                        "sub-district": "Purwokerto Wetan",
+                        "district": "Purwokerto Timur",
+                        "city": "Banyumas",
+                        "province": "Jawa Tengah",
+                        "zip-code": "53111"
+                      },
+                      "product": [
+                        {
+                          "name": "Frisian Flag susu UHT 900ml",
+                          "price": 13900
+                        },
+                        {
+                          "name": "Alini Gula Halus 500gr",
+                          "price": 20000
+                        },
+                        {
+                          "name": "Telur 1kg",
+                          "price": 13000
+                        },
+                        {
+                          "name": "DOLPIN Garam Dapur 500gr",
+                          "price": 10500
+                        },
+                        {
+                          "name": "Beras Ramos 1kg",
+                          "price": 14000
+                        },
+                        {
+                          "name": "Bawang putih 1kg",
+                          "price": 32000
+                        },
+                        {
+                          "name": "Bawang merah 1kg",
+                          "price": 37000
+                        },
+                        {
+                          "name": "Santan sasa 65ml",
+                          "price": 3500
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/supplier/{id}": {
+      "get": {
+        "summary": "Get supplier by ID",
+        "description": "Get supplier information by ID from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "success get supplier by Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "results": {
+                      "$ref": "#/components/schemas/supplierWithId"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success get supplier by Id",
+                  "results": {
+                    "name": "Warung Toni",
+                    "origin": [-7.424724, 109.2290617],
+                    "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
+                    "address-obj": {
+                      "sub-district": "Purwokerto Wetan",
+                      "district": "Purwokerto Timur",
+                      "city": "Banyumas",
+                      "province": "Jawa Tengah",
+                      "zip-code": "53111"
+                    },
+                    "product": [
+                      {
+                        "name": "Frisian Flag susu UHT 900ml",
+                        "price": 13900
+                      },
+                      {
+                        "name": "Alini Gula Halus 500gr",
+                        "price": 20000
+                      },
+                      {
+                        "name": "Telur 1kg",
+                        "price": 13000
+                      },
+                      {
+                        "name": "DOLPIN Garam Dapur 500gr",
+                        "price": 10500
+                      },
+                      {
+                        "name": "Beras Ramos 1kg",
+                        "price": 14000
+                      },
+                      {
+                        "name": "Bawang putih 1kg",
+                        "price": 32000
+                      },
+                      {
+                        "name": "Bawang merah 1kg",
+                        "price": 37000
+                      },
+                      {
+                        "name": "Santan sasa 65ml",
+                        "price": 3500
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/supplier/create": {
+      "post": {
+        "summary": "Create supplier (admin only)",
+        "description": "Create supplier to database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success create supplier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "id": {
+                      "$ref": "#/components/schemas/id"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success create supplier",
+                  "id": "gJDNQCOC"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          }
+        }
+      }
+    },
+    "/supplier/edit/{id}": {
+      "put": {
+        "summary": "Edit Supplier by ID (admin only)",
+        "description": "Edit Supplier by ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/supplier"
+              },
+              "example": {
+                "name": "Warung Toni",
+                "origin": [-7.424724, 109.2290617],
+                "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
+                "address-obj": {
+                  "sub-district": "Purwokerto Wetan",
+                  "district": "Purwokerto Timur",
+                  "city": "Banyumas",
+                  "province": "Jawa Tengah",
+                  "zip-code": "53111"
+                },
+                "product": [
+                  {
+                    "name": "Frisian Flag susu UHT 900ml",
+                    "price": 15000
+                  },
+                  {
+                    "name": "Alini Gula Halus 500gr",
+                    "price": 20000
+                  },
+                  {
+                    "name": "Telur 1kg",
+                    "price": 13000
+                  },
+                  {
+                    "name": "DOLPIN Garam Dapur 500gr",
+                    "price": 10500
+                  },
+                  {
+                    "name": "Beras Ramos 1kg",
+                    "price": 14000
+                  },
+                  {
+                    "name": "Bawang putih 1kg",
+                    "price": 32000
+                  },
+                  {
+                    "name": "Bawang merah 1kg",
+                    "price": 37000
+                  },
+                  {
+                    "name": "Santan sasa 65ml",
+                    "price": 3500
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success edit supplier by Id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    },
+                    "id": {
+                      "$ref": "#/components/schemas/id"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success edit supplier",
+                  "id": "gJDNQCOC"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/supplier/delete/{id}": {
+      "delete": {
+        "summary": "Delete supplier by ID (admin only)",
+        "description": "Delete supplier information by ID from database",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/id"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success delete supplier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "$ref": "#/components/schemas/Message"
+                    }
+                  }
+                },
+                "example": {
+                  "message": "success delete supplier"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "user": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string",
+            "format": "password"
+          }
+        },
+        "example": {
+          "username": "testing",
+          "email": "testing@gmail.com",
+          "password": "testing123"
+        }
+      },
+      "userPassword": {
+        "type": "object",
+        "properties": {
+          "current-password": {
+            "type": "string",
+            "format": "password"
+          },
+          "new-password": {
+            "type": "string",
+            "format": "password"
+          },
+          "new-password-confirmation": {
+            "type": "string",
+            "format": "password"
+          }
+        }
+      },
+      "recipe": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "servings": {
+            "type": "integer"
+          },
+          "times": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string",
+            "format": "url"
+          },
+          "description": {
+            "type": "string"
+          },
+          "ingredients": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "title": "nasi goreng jawa",
+          "servings": 3,
+          "times": 45,
+          "ingredients": [
+            "1600 g nasi putih",
+            "2 butir telur, kocok lepas",
+            "1 buah daging paha ayam atas bawah, potong agak tipis",
+            "6 buah bakso sapi, iris",
+            "5 lembar kol, buang tulang, iris kasar",
+            "6 batang caisim, potong 3 cm",
+            "2 sdm Bango Kecap Manis",
+            "1 bungkus Royco Bumbu Komplit Nasi Goreng",
+            "1 sdt garam",
+            "\u215b sdt merica putih bubuk",
+            "2 batang daun bawang, iris miring",
+            "2 sdm minyak, untuk menumis",
+            "3 siung bawang putih, goreng",
+            "4 butir kemiri, goreng",
+            "6 butir bawang merah",
+            "3 buah cabai merah besar",
+            "5 butir ebi"
+          ],
+          "steps": [
+            "1 Panaskan minyak. Tumis bumbu halus sampai harum. Tambahkan telur di tengah wajan. Aduk sampai berbutir.",
+            "2 Masukkan ayam, aduk hingga matang. Masukkan bakso sapi, aduk sebentar. Tambahkan kol dan caisim. Aduk sampai setengah layu.",
+            "3 Masukkan nasi. Aduk-aduk. Tambahkan\u00a0Bango Kecap Manis, Royco Bumbu Komplit Nasi Goreng, garam, dan merica. Aduk sampai matang.",
+            "4 Masukkan daun bawang. Aduk rata. Sajikan."
+          ],
+          "description": "Resep nasi goreng Jawa merupakan salah satu menu makanan rumahan yang jadi andalan di kala para ratu dapur sedang tak punya waktu memasak atau tak punya bahan masakan di kulkas Bahan-bahannya yang sederhana dan hampir selalu ada di setiap rumah membuat resep nasi goreng ini sangat mudah diaplikasikan kapan saja",
+          "author": "Dilla",
+          "image": "https://www.masakapahariini.com/wp-content/uploads/2019/01/nasi-goreng-jawa-620x440.jpg",
+          "tags": ["Nasi Goreng"]
+        }
+      },
+      "recipeArray": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "servings": {
+              "type": "integer"
+            },
+            "times": {
+              "type": "integer"
+            },
+            "image": {
+              "type": "string",
+              "format": "url"
+            },
+            "description": {
+              "type": "string"
+            },
+            "tags": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "example": {
+          "results": [
+            {
+              "id": "pQLi6pat",
+              "title": "nasi goreng jawa",
+              "servings": 3,
+              "times": 45,
+              "ingredients": [
+                "1600 g nasi putih",
+                "2 butir telur, kocok lepas",
+                "1 buah daging paha ayam atas bawah, potong agak tipis",
+                "6 buah bakso sapi, iris",
+                "5 lembar kol, buang tulang, iris kasar",
+                "6 batang caisim, potong 3 cm",
+                "2 sdm Bango Kecap Manis",
+                "1 bungkus Royco Bumbu Komplit Nasi Goreng",
+                "1 sdt garam",
+                "\u215b sdt merica putih bubuk",
+                "2 batang daun bawang, iris miring",
+                "2 sdm minyak, untuk menumis",
+                "3 siung bawang putih, goreng",
+                "4 butir kemiri, goreng",
+                "6 butir bawang merah",
+                "3 buah cabai merah besar",
+                "5 butir ebi"
+              ],
+              "steps": [
+                "1 Panaskan minyak. Tumis bumbu halus sampai harum. Tambahkan telur di tengah wajan. Aduk sampai berbutir.",
+                "2 Masukkan ayam, aduk hingga matang. Masukkan bakso sapi, aduk sebentar. Tambahkan kol dan caisim. Aduk sampai setengah layu.",
+                "3 Masukkan nasi. Aduk-aduk. Tambahkan\u00a0Bango Kecap Manis, Royco Bumbu Komplit Nasi Goreng, garam, dan merica. Aduk sampai matang.",
+                "4 Masukkan daun bawang. Aduk rata. Sajikan."
+              ],
+              "description": "Resep nasi goreng Jawa merupakan salah satu menu makanan rumahan yang jadi andalan di kala para ratu dapur sedang tak punya waktu memasak atau tak punya bahan masakan di kulkas Bahan-bahannya yang sederhana dan hampir selalu ada di setiap rumah membuat resep nasi goreng ini sangat mudah diaplikasikan kapan saja",
+              "author": "Dilla",
+              "image": "https://www.masakapahariini.com/wp-content/uploads/2019/01/nasi-goreng-jawa-620x440.jpg",
+              "tags": ["Nasi Goreng"]
+            }
+          ]
+        }
+      },
+      "recipeWithId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "servings": {
+            "type": "integer"
+          },
+          "times": {
+            "type": "integer"
+          },
+          "image": {
+            "type": "string",
+            "format": "url"
+          },
+          "description": {
+            "type": "string"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "example": {
+          "id": "pQLi6pat",
+          "title": "nasi goreng jawa",
+          "servings": 3,
+          "times": 45,
+          "ingredients": [
+            "1600 g nasi putih",
+            "2 butir telur, kocok lepas",
+            "1 buah daging paha ayam atas bawah, potong agak tipis",
+            "6 buah bakso sapi, iris",
+            "5 lembar kol, buang tulang, iris kasar",
+            "6 batang caisim, potong 3 cm",
+            "2 sdm Bango Kecap Manis",
+            "1 bungkus Royco Bumbu Komplit Nasi Goreng",
+            "1 sdt garam",
+            "\u215b sdt merica putih bubuk",
+            "2 batang daun bawang, iris miring",
+            "2 sdm minyak, untuk menumis",
+            "3 siung bawang putih, goreng",
+            "4 butir kemiri, goreng",
+            "6 butir bawang merah",
+            "3 buah cabai merah besar",
+            "5 butir ebi"
+          ],
+          "steps": [
+            "1 Panaskan minyak. Tumis bumbu halus sampai harum. Tambahkan telur di tengah wajan. Aduk sampai berbutir.",
+            "2 Masukkan ayam, aduk hingga matang. Masukkan bakso sapi, aduk sebentar. Tambahkan kol dan caisim. Aduk sampai setengah layu.",
+            "3 Masukkan nasi. Aduk-aduk. Tambahkan\u00a0Bango Kecap Manis, Royco Bumbu Komplit Nasi Goreng, garam, dan merica. Aduk sampai matang.",
+            "4 Masukkan daun bawang. Aduk rata. Sajikan."
+          ],
+          "description": "Resep nasi goreng Jawa merupakan salah satu menu makanan rumahan yang jadi andalan di kala para ratu dapur sedang tak punya waktu memasak atau tak punya bahan masakan di kulkas Bahan-bahannya yang sederhana dan hampir selalu ada di setiap rumah membuat resep nasi goreng ini sangat mudah diaplikasikan kapan saja",
+          "author": "Dilla",
+          "image": "https://www.masakapahariini.com/wp-content/uploads/2019/01/nasi-goreng-jawa-620x440.jpg",
+          "tags": ["Nasi Goreng"]
+        }
+      },
+      "supplier": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "address": {
+            "type": "string"
+          },
+          "address-obj": {
+            "type": "object",
+            "properties": {
+              "ward": {
+                "type": "string"
+              },
+              "districts": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "zip-code": {
+                "type": "integer"
+              }
+            }
+          },
+          "product": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "contact": {
+            "type": "string",
+            "pattern": "^08[0-9]{10,11}$"
+          }
+        },
+        "example": {
+          "name": "Warung Toni",
+          "origin": [-7.424724, 109.2290617],
+          "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
+          "address-obj": {
+            "sub-district": "Purwokerto Wetan",
+            "district": "Purwokerto Timur",
+            "city": "Banyumas",
+            "province": "Jawa Tengah",
+            "zip-code": "53111"
+          },
+          "product": [
+            {
+              "name": "Frisian Flag susu UHT 900ml",
+              "price": 13900
+            },
+            {
+              "name": "Alini Gula Halus 500gr",
+              "price": 20000
+            },
+            {
+              "name": "Telur 1kg",
+              "price": 13000
+            },
+            {
+              "name": "DOLPIN Garam Dapur 500gr",
+              "price": 10500
+            },
+            {
+              "name": "Beras Ramos 1kg",
+              "price": 14000
+            },
+            {
+              "name": "Bawang putih 1kg",
+              "price": 32000
+            },
+            {
+              "name": "Bawang merah 1kg",
+              "price": 37000
+            },
+            {
+              "name": "Santan sasa 65ml",
+              "price": 3500
+            }
+          ]
+        }
+      },
+      "supplierArray": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "$ref": "#/components/schemas/id"
+            },
+            "name": {
+              "type": "string"
+            },
+            "origin": {
+              "type": "array",
+              "items": {
+                "type": "number",
+                "format": "float"
+              }
+            },
+            "address": {
+              "type": "string"
+            },
+            "address-obj": {
+              "type": "object",
+              "properties": {
+                "ward": {
+                  "type": "string"
+                },
+                "districts": {
+                  "type": "string"
+                },
+                "city": {
+                  "type": "string"
+                },
+                "province": {
+                  "type": "string"
+                },
+                "zip-code": {
+                  "type": "integer"
+                }
+              }
+            },
+            "product": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "contact": {
+              "type": "string",
+              "pattern": "^08[0-9]{10,11}$"
+            }
+          }
+        }
+      },
+      "supplierWithId": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "float"
+            }
+          },
+          "address": {
+            "type": "string"
+          },
+          "address-obj": {
+            "type": "object",
+            "properties": {
+              "ward": {
+                "type": "string"
+              },
+              "districts": {
+                "type": "string"
+              },
+              "city": {
+                "type": "string"
+              },
+              "province": {
+                "type": "string"
+              },
+              "zip-code": {
+                "type": "integer"
+              }
+            }
+          },
+          "product": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "integer"
+                }
+              }
+            }
+          },
+          "contact": {
+            "type": "string",
+            "pattern": "^08[0-9]{10,11}$"
+          }
+        }
+      },
+      "userProfile": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "picture": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            }
+          },
+          "shipping": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "supplierId": {
+                  "type": "string"
+                },
+                "shippingPrice": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "id": {
+        "type": "string",
+        "pattern": "[a-zA-Z0-9]{8}"
+      },
+      "Message": {
+        "type": "string"
+      }
+    },
+    "parameters": {
+      "id": {
+        "in": "path",
+        "name": "ID",
+        "description": "Random 8 character and number",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "[a-zA-Z0-9]{8}"
+        },
+        "examples": {
+          "user1": {
+            "description": "Example ID",
+            "value": "eJXCDdzd"
+          },
+          "user2": {
+            "description": "Example ID",
+            "value": "d7hdyZ0B"
+          },
+          "recipe1": {
+            "description": "Example ID",
+            "value": "pQLi6pat"
+          },
+          "recipe2": {
+            "description": "Example ID",
+            "value": "8cLv0cul"
+          },
+          "supplier1": {
+            "description": "Example ID",
+            "value": "gJDNQCOC"
+          },
+          "supplier2": {
+            "description": "Example ID",
+            "value": "24SUZiRT"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Bearer Token Invalid",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "401 Unauthorized Access"
+            }
+          }
+        }
+      },
+      "Forbidden": {
+        "description": "Token Valid but not admin",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "403 Forbidden Access"
+            }
+          }
+        }
+      },
+      "Bad-Request": {
+        "description": "Invalid Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "400 Bad Request"
+            }
+          }
+        }
+      },
+      "Not-Found": {
+        "description": "Resource Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Message"
+            },
+            "example": {
+              "message": "404 Not Found"
+            }
+          }
+        }
+      }
+    }
+  }
+}
