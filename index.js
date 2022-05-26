@@ -2,8 +2,14 @@ const express = require("express");
 const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 swaggerDocument = require("./src/docs/api.json");
+const { Datastore } = require("@google-cloud/datastore");
 
 require("dotenv").config();
+
+const datastore = new Datastore({
+  projectId: process.env.GCP_PROJECT_ID,
+  keyFilename: process.env.DATASTORE_DEV_API_KEY,
+});
 
 const app = express();
 

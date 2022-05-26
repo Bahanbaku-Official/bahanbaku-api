@@ -3,3 +3,6 @@ node_modules/
 
 # Environment
 .env
+
+# GCP Development API Key
+bahanbaku-*.json
