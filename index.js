@@ -6,6 +6,10 @@ const { Datastore } = require("@google-cloud/datastore");
 
 require("dotenv").config();
 
+const user = require('./src/routes/user.route');
+const recipe = require('./src/routes/recipe.route');
+const supplier = require('./src/routes/supplier.route');
+
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
   keyFilename: process.env.DATASTORE_DEV_API_KEY,
@@ -24,6 +28,10 @@ app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.json());
 
 app.use(cors());
+
+app.use('/user', user);
+app.use('/recipe', recipe);
+app.use('/supplier', supplier);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
