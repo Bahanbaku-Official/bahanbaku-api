@@ -172,8 +172,7 @@ async function getRecipeById(datastore, id) {
     } catch (err) {
       console.error("ERROR:", err);
     }
-  } else {
-    // Kalau Resep tidak ditemukan
+  } else {    
     console.log("ERROR: Recipe doesn't exist");
     return [];
   }
@@ -220,7 +219,7 @@ async function getRecipe(datastore, option = {}) {
         .limit(5); // Limit data yang di kembalikan
       break;
     default: // Tidak ada opsi yang dipilih
-      query = datastore.createQuery("Dev", "recipe").limit(10);
+      query = datastore.createQuery("Dev", "recipe");
       break;
   }
 
@@ -231,8 +230,7 @@ async function getRecipe(datastore, option = {}) {
   if (result[0].length > 0) {
     existingData = parseMultiRecipeData(datastore, result);
     return existingData;
-  } else {
-    // Kalau Resep tidak ditemukan
+  } else {    
     console.log("ERROR: Recipe with that title doesn't exist");
     return [];
   }

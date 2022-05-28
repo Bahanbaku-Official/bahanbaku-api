@@ -490,7 +490,7 @@ async function deleteBookmark(datastore, id, bookmarkString) {
     // Remove bookmark
     bookmarkIndex = bookmark.indexOf(bookmarkString);
     if (bookmarkIndex > -1) {
-      bookmarkFinal = [...bookmark];
+      sbookmarkFinal = [...bookmark];
       bookmark.splice(bookmarkIndex, 1); // 2nd parameter means remove one item only
     }
 

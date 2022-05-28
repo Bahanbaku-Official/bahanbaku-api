@@ -17,8 +17,16 @@ const {
   getRecipeById,
   updateRecipe,
   deleteRecipe,
-  getRecipe
-} = require("./recipe")
+  getRecipe,
+} = require("./recipe");
+
+const {
+  createSupplier,
+  getSupplierById,
+  updateSupplier,
+  deleteSupplier,
+  getSupplier,
+} = require("./supplier");
 
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
@@ -50,9 +58,9 @@ async function main() {
     steps: ["string"],
     tags: ["string"],
     author: "rifqi",
-    rating:0
+    rating: 0,
   };
-  
+
   //ret = await createRecipe(datastore , recipe)
   //console.log("Recipe ID : " + ret);
 
@@ -73,6 +81,71 @@ async function main() {
   // console.log(ret);
   // ret = await getRecipe(datastore,{featured:1})
   // console.log(ret);
+
+  supplier = {
+    name: "Rifqi Shop",
+    origin: [-7.424724, 109.2290617],
+    address:
+      "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Timur., Kabupaten Banyumas, Jawa Tengah",
+    addressObj: {
+      subDistrict: "Purwokerto Wetan",
+      district: "Purwokerto Timur",
+      city: "Banyumas",
+      province: "Jawa Tengah",
+      zipCode: "53111",
+    },
+    product: [
+      {
+        name: "Frisian Flag susu UHT 900ml",
+        price: 13900,
+      },
+      {
+        name: "Alini Gula Halus 500gr",
+        price: 20000,
+      },
+      {
+        name: "Telur 1kg",
+        price: 13000,
+      },
+      {
+        name: "DOLPIN Garam Dapur 500gr",
+        price: 10500,
+      },
+      {
+        name: "Beras Ramos 1kg",
+        price: 14000,
+      },
+      {
+        name: "Bawang putih 1kg",
+        price: 32000,
+      },
+      {
+        name: "Bawang merah 1kg",
+        price: 37000,
+      },
+      {
+        name: "Santan sasa 65ml",
+        price: 3500,
+      },
+    ],
+    contact:"081234567890",
+    image:"https://google.com"
+  };
+
+  // ret = await createSupplier(datastore , supplier)
+  // console.log("Supplier ID : " + ret);
+
+  // ret = await getSupplier(datastore)
+  // console.log(ret);
+
+  // ret = await getSupplierById(datastore,"j9Dy4kGK3p66")
+  // console.log(ret); // Response
+
+  // ret = await updateSupplier(datastore,"j9Dy4kGK3p66",supplier)
+  // console.log("Supplier ID : " + ret);
+
+  // ret = await deleteSupplier(datastore,"j9Dy4kGK3p66")
+  // console.log("Supplier ID : " + ret);
 
 }
 main();
