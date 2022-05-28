@@ -35,16 +35,55 @@ const datastore = new Datastore({
 
 async function main() {
   // User
-  //await register(datastore,"irvan", "irvan@gmail.com", "irvan123", "admin"); // admin is optional , default value is user
-  //res = await login(datastore, "irvan@gmail.com", "irvan123");
-  //console.log(res)
-  //res = await profile(datastore, "G3qt59Hfl4La");
-  //console.log(res);
-  //res = await update(datastore, "G3qt59Hfl4La" , "irvan 2" , "irvan@gmail.com" , "irvan123" ,"irvan124");
-  //res = await deleteUser(datastore,"G3qt59Hfl4La")
-  //res = await updateLocation(datastore,"G3qt59Hfl4La",{"lat":1.21313131,"lng":2.2313131})
-  //res = await addBookmark(datastore,"G3qt59Hfl4La","ID Bookmark 2")
-  //res = await deleteBookmark(datastore,"G3qt59Hfl4La","ID Bookmark 2")
+
+  // req = {
+  //   username: "irvan",
+  //   email: "irvan@gmail.com",
+  //   password: "irvan123",
+  // };
+  // ret = await register(datastore,req, "admin"); // admin is optional , default value is user
+  // console.log("User ID: "+ ret);
+
+  // req = {
+  //   email: "irvan@gmail.com",
+  //   password: "irvan123",
+  // };
+  // ret = await login(datastore, req);
+  // console.log(
+  //   ret === true ? "Login Success" : " Wrong username / password"
+  // ); // Give JWT Token
+
+  // ret = await profile(datastore, "svMz9AIXjdhp");
+  // console.log(ret);
+
+  // req = {
+  //   username: "irvan 2",
+  //   email: "irvan@gmail.com",
+  //   password: "irvan123",
+  //   newPassword: "",
+  // };
+  // ret = await update(datastore, "svMz9AIXjdhp", req);
+  // console.log(ret !== false ? "User ID: " + ret : "Wrong username / password");
+
+  // req = {
+  //   username: "irvan",
+  //   email: "irvan@gmail.com",
+  //   password: "irvan123",
+  //   newPassword: "irvan125",
+  // };
+  // ret = await update(datastore, "svMz9AIXjdhp", req);
+  // console.log(ret !== false ? "User ID: " + ret : "Wrong username / password");
+
+  // ret = await deleteUser(datastore,"svMz9AIXjdhp")
+
+  // req = { lat: 1.21313131, lng: 2.2313131 };
+  // ret = await updateLocation(datastore, "svMz9AIXjdhp",req);
+
+  // ret = await addBookmark(datastore, "svMz9AIXjdhp", "Recipe2");
+  // console.log(ret !== false ? "Success add Bookmark" : "Fail add bookmark")
+
+  // ret = await deleteBookmark(datastore, "svMz9AIXjdhp", "Recipe1");
+  // console.log(ret !== false ? "Success delete Bookmark" : "Fail delete bookmark")
 
   // Recipe
   recipe = {
@@ -128,8 +167,8 @@ async function main() {
         price: 3500,
       },
     ],
-    contact:"081234567890",
-    image:"https://google.com"
+    contact: "081234567890",
+    image: "https://google.com",
   };
 
   // ret = await createSupplier(datastore , supplier)
@@ -146,6 +185,5 @@ async function main() {
 
   // ret = await deleteSupplier(datastore,"j9Dy4kGK3p66")
   // console.log("Supplier ID : " + ret);
-
 }
 main();
