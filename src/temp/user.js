@@ -31,12 +31,8 @@ function parseUserData(datastore, userData) {
   const role = userData[0][0]["role"];
   const passwordChangedAt = userData[0][0]["passwordChangedAt"];
   const password = userData[0][0]["password"];
-  const datastoreId = userData[0][0][datastore.KEY]["id"]; // Get Datastore ID
 
-  const key = datastore.key({
-    namespace: "Dev",
-    path: ["user", parseInt(datastoreId, 10)],
-  });
+  const key = userData[0][0][datastore.KEY];
 
   return {
     key: key,
@@ -50,72 +46,50 @@ function parseUserData(datastore, userData) {
     email: email,
     passwordChangedAt: passwordChangedAt,
     password: password,
-    datastoreId: datastoreId,
     origin: origin,
   };
 }
 
-async function register(datastore, username, email, password, role = "user") {
+function objectToDatastoreObject(objectData) {
+  key = objectData["key"];
+  delete objectData["key"];
+  entity = {
+    key,
+    data: [],
+  };
+  for (const [key, value] of Object.entries(objectData)) {
+    obj = {
+      name: key,
+      value: value,
+    };
+    entity.data.push(obj);
+  }
+
+  return entity;
+}
+
+async function register(datastore, req, role = "user") {
   const key = datastore.key({
     namespace: "Dev",
     path: ["user"],
   });
-  const entity = {
-    key: key,
-    data: [
-      {
-        name: "id",
-        value: nanoid(),
-      },
-      {
-        name: "createdAt",
-        value: new Date().toJSON(),
-      },
-      {
-        name: "updatedAt",
-        value: new Date().toJSON(),
-      },
-      {
-        name: "username",
-        value: username,
-      },
-      {
-        name: "email",
-        value: email,
-      },
-      {
-        name: "password",
-        value: password,
-      },
-      {
-        name: "picture",
-        value: "",
-      },
-      {
-        name: "origin",
-        value: {
-          lat: 0,
-          lng: 0,
-        },
-      },
-      {
-        name: "passwordChangedAt",
-        value: new Date().toJSON(),
-      },
-      {
-        name: "bookmark",
-        value: [],
-      },
-      {
-        name: "shipping",
-        value: [],
-      },
-      {
-        name: "role",
-        value: role,
-      },
-    ],
-  };
+
+  user = {};
+  user["key"] = key;
+  user["id"] = nanoid();
+  user["createdAt"] = new Date().toJSON();
+  user["updatedAt"] = user["createdAt"];
+  user["username"] = req.username;
+  user["email"] = req.email;
+  user["password"] = req.password;
+  user["picture"] = "";
+  user["origin"] = [];
+  user["passwordChangedAt"] = user["createdAt"];
+  user["bookmark"] = [];
+  user["shipping"] = [];
+  user["role"] = role;
+
+  const entity = objectToDatastoreObject(user);
 
   const query = datastore
     .createQuery("Dev", "user")
@@ -125,29 +99,36 @@ async function register(datastore, username, email, password, role = "user") {
   if (result[0].length > 0) {
     // Aksi kalau email udah pernah register
     console.log("Email has been registered");
+    return [];
   } else {
     try {
       res = await datastore.save(entity);
       console.log(`User ${key.id} created successfully.`);
+      return user.id;
     } catch (err) {
       console.error("ERROR:", err);
+      return [];
     }
   }
 }
 
-async function login(datastore, email, password) {
+async function login(datastore, req) {
   const query = datastore
     .createQuery("Dev", "user")
-    .filter("email", "=", email)
-    .filter("password", "=", password)
+    .filter("email", "=", req.email)
+    .filter("password", "=", req.password)
     .limit(1);
 
   try {
     const result = await datastore.runQuery(query);
-    return result;
+    if (result[0].length > 0) {
+      return true;
+    } else {
+      return false;
+    }
   } catch (err) {
     console.error("ERROR:", err);
-    return undefined;
+    return [];
   }
 }
 
@@ -160,10 +141,10 @@ async function profile(datastore, id) {
   try {
     const result = await datastore.runQuery(query);
     if (result[0].length > 0) {
-      // Kalau User ada
+      console.log("Get Profile Success");
       return parseUserData(datastore, result);
     } else {
-      // Kalau User gaada
+      console.log("User with that ID doesn't exist");
       return [];
     }
   } catch (err) {
@@ -172,18 +153,11 @@ async function profile(datastore, id) {
   }
 }
 
-async function update(
-  datastore,
-  id,
-  username,
-  email,
-  password,
-  newpassword = ""
-) {
+async function update(datastore, id, req) {
   const query = datastore
     .createQuery("Dev", "user")
     .filter("id", "=", id)
-    .filter("password", "=", password)
+    .filter("password", "=", req.password)
     .limit(1);
 
   try {
@@ -192,86 +166,31 @@ async function update(
     console.error("ERROR:", err);
   }
 
-  if (result !== undefined) {
-    ({
-      key,
-      id,
-      createdAt,
-      origin,
-      picture,
-      bookmark,
-      shipping,
-      role,
-      passwordChangedAt,
-      password,
-    } = parseUserData(datastore, result));
-
+  if (result[0].length > 0) {
+    existingData = parseUserData(datastore, result);
     const passwordChangedAtFinal =
-      newpassword === "" ? passwordChangedAt : new Date().toJSON();
-    const passwordFinal = newpassword === "" ? password : newpassword;
+      req.newPassword === "" ? existingData.passwordChangedAt : new Date().toJSON();
+    const passwordFinal =
+      req.newPassword === "" ? existingData.password : req.newPassword;
 
-    entity = {
-      key: key,
-      data: [
-        {
-          name: "id",
-          value: id,
-        },
-        {
-          name: "createdAt",
-          value: createdAt,
-        },
-        {
-          name: "updatedAt",
-          value: new Date().toJSON(),
-        },
-        {
-          name: "username",
-          value: username,
-        },
-        {
-          name: "email",
-          value: email,
-        },
-        {
-          name: "password",
-          value: passwordFinal,
-        },
-        {
-          name: "picture",
-          value: picture,
-        },
-        {
-          name: "origin",
-          value: origin,
-        },
-        {
-          name: "passwordChangedAt",
-          value: passwordChangedAtFinal,
-        },
-        {
-          name: "bookmark",
-          value: bookmark,
-        },
-        {
-          name: "shipping",
-          value: shipping,
-        },
-        {
-          name: "role",
-          value: role,
-        },
-      ],
-    };
+    existingData["username"] = req.username;
+    existingData["email"] = req.email;
+    existingData["passwordChangedAt"] = passwordChangedAtFinal;
+    existingData["password"] = passwordFinal;
+    existingData["updatedAt"] = new Date().toJSON();
+
+    const entity = objectToDatastoreObject(existingData);
 
     try {
       res = await datastore.update(entity);
       console.log(`User ${key.id} updated successfully.`);
+      return existingData.id;
     } catch (err) {
       console.error("ERROR:", err);
     }
   } else {
     console.log("Username / Password Wrong");
+    return false;
   }
 }
 
@@ -383,87 +302,30 @@ async function addBookmark(datastore, id, bookmarkString) {
   const result = await verifyUserExist(datastore, id);
 
   if (result !== undefined) {
-    ({
-      key,
-      id,
-      username,
-      email,
-      createdAt,
-      picture,
-      bookmark,
-      shipping,
-      origin,
-      role,
-      passwordChangedAt,
-      password,
-      datastoreId,
-    } = parseUserData(datastore, result));
+    existingData = parseUserData(datastore, result);
 
-    bookmarkFinal = [...bookmark];
+    bookmarkFinal = [...existingData.bookmark];
     bookmarkFinal.push(bookmarkString);
 
-    entity = {
-      key: key,
-      data: [
-        {
-          name: "id",
-          value: id,
-        },
-        {
-          name: "createdAt",
-          value: createdAt,
-        },
-        {
-          name: "updatedAt",
-          value: new Date().toJSON(),
-        },
-        {
-          name: "username",
-          value: username,
-        },
-        {
-          name: "email",
-          value: email,
-        },
-        {
-          name: "password",
-          value: password,
-        },
-        {
-          name: "picture",
-          value: picture,
-        },
-        {
-          name: "origin",
-          value: origin,
-        },
-        {
-          name: "passwordChangedAt",
-          value: passwordChangedAt,
-        },
-        {
-          name: "bookmark",
-          value: bookmarkFinal,
-        },
-        {
-          name: "shipping",
-          value: shipping,
-        },
-        {
-          name: "role",
-          value: role,
-        },
-      ],
-    };
+    // Remove Duplicate
+    bookmarkFinal = new Set(bookmarkFinal)
+    bookmarkFinal = Array.from(bookmarkFinal)
+
+    existingData["updatedAt"] = new Date().toJSON()
+    existingData["bookmark"] = bookmarkFinal
+
+    const entity = objectToDatastoreObject(existingData)
 
     try {
       res = await datastore.update(entity);
       console.log(`User ${key.id} updated successfully.`);
+      return true
     } catch (err) {
       console.error("ERROR:", err);
     }
   } else {
     console.log("User Doesn't Exist");
+    return false
   }
 }
 
@@ -471,91 +333,30 @@ async function deleteBookmark(datastore, id, bookmarkString) {
   const result = await verifyUserExist(datastore, id);
 
   if (result[0].length > 0) {
-    ({
-      key,
-      id,
-      username,
-      email,
-      createdAt,
-      picture,
-      bookmark,
-      shipping,
-      origin,
-      role,
-      passwordChangedAt,
-      password,
-      datastoreId,
-    } = parseUserData(datastore, result));
+    existingData = parseUserData(datastore, result);
 
     // Remove bookmark
-    bookmarkIndex = bookmark.indexOf(bookmarkString);
-    if (bookmarkIndex > -1) {
-      bookmarkFinal = [...bookmark];
-      bookmark.splice(bookmarkIndex, 1); // 2nd parameter means remove one item only
+    bookmarkIndex = existingData.bookmark.indexOf(bookmarkString);
+    bookmarkFinal = [...existingData.bookmark];
+    if (bookmarkIndex > -1) {      
+      bookmarkFinal.splice(bookmarkIndex, 1); // 2nd parameter means remove one item only
     }
 
-    entity = {
-      key: key,
-      data: [
-        {
-          name: "id",
-          value: id,
-        },
-        {
-          name: "createdAt",
-          value: createdAt,
-        },
-        {
-          name: "updatedAt",
-          value: new Date().toJSON(),
-        },
-        {
-          name: "username",
-          value: username,
-        },
-        {
-          name: "email",
-          value: email,
-        },
-        {
-          name: "password",
-          value: password,
-        },
-        {
-          name: "picture",
-          value: picture,
-        },
-        {
-          name: "origin",
-          value: origin,
-        },
-        {
-          name: "passwordChangedAt",
-          value: passwordChangedAt,
-        },
-        {
-          name: "bookmark",
-          value: bookmark,
-        },
-        {
-          name: "shipping",
-          value: shipping,
-        },
-        {
-          name: "role",
-          value: role,
-        },
-      ],
-    };
+    existingData["updatedAt"] = new Date().toJSON()
+    existingData["bookmark"] = bookmarkFinal    
+
+    const entity = objectToDatastoreObject(existingData)
 
     try {
       res = await datastore.update(entity);
       console.log(`User ${key.id} updated successfully.`);
+      return true
     } catch (err) {
       console.error("ERROR:", err);
     }
   } else {
     console.log("User Doesn't Exist");
+    return false
   }
 }
 
