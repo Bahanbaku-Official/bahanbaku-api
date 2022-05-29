@@ -1,4 +1,7 @@
 const { Datastore } = require("@google-cloud/datastore");
+const { Storage } = require("@google-cloud/storage");
+const fs = require("fs").promises;
+
 require("dotenv").config();
 
 const {
@@ -8,6 +11,7 @@ const {
   update,
   deleteUser,
   updateLocation,
+  uploadPicture,
   addBookmark,
   deleteBookmark,
 } = require("./user");
@@ -31,6 +35,11 @@ const {
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
   keyFilename: process.env.DATASTORE_DEV_API_KEY,
+});
+
+const cloudStorage = new Storage({
+  projectId: process.env.GCP_PROJECT_ID,
+  keyFilename: process.env.CLOUD_STORAGE_DEV_API_KEY,
 });
 
 async function main() {
@@ -84,6 +93,22 @@ async function main() {
 
   // ret = await deleteBookmark(datastore, "svMz9AIXjdhp", "Recipe1");
   // console.log(ret !== false ? "Success delete Bookmark" : "Fail delete bookmark")
+
+  photoName = "tes_foto.jpg";
+  photoObject = {};  
+
+  async function uploadPhotoFromLocal() {
+    data = await fs.readFile(photoName, "binary");         
+    photoObject = {
+      originalname: photoName,
+      buffer: Buffer.from(data,"binary"),
+    };          
+  }
+
+  await uploadPhotoFromLocal();  
+
+  ret = await uploadPicture(datastore, cloudStorage, "svMz9AIXjdhp", photoObject);
+  console.log(ret);
 
   // Recipe
   recipe = {

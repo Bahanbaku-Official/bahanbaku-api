@@ -169,7 +169,9 @@ async function update(datastore, id, req) {
   if (result[0].length > 0) {
     existingData = parseUserData(datastore, result);
     const passwordChangedAtFinal =
-      req.newPassword === "" ? existingData.passwordChangedAt : new Date().toJSON();
+      req.newPassword === ""
+        ? existingData.passwordChangedAt
+        : new Date().toJSON();
     const passwordFinal =
       req.newPassword === "" ? existingData.password : req.newPassword;
 
@@ -190,6 +192,69 @@ async function update(datastore, id, req) {
     }
   } else {
     console.log("Username / Password Wrong");
+    return false;
+  }
+}
+
+async function updateProfilePictureInformation(datastore, data) {
+  console.log('Updating User Profile Picture Information');
+  const publicUrl = `https://storage.googleapis.com/${data.bucketName}/${data.blobName}`;
+  existingData = parseUserData(datastore, data.result);
+
+  existingData["updatedAt"] = new Date().toJSON();
+  existingData["picture"] = publicUrl;
+
+  const entity = objectToDatastoreObject(existingData);
+
+  try {
+    res = await datastore.update(entity);
+    console.log(`User ${existingData.id} updated successfully.`);
+    return existingData.id;
+  } catch (err) {
+    console.error("ERROR:", err);
+  }
+}
+
+async function uploadPicture(datastore, cloudStorage, id, file) {
+  const query = datastore
+    .createQuery("Dev", "user")
+    .filter("id", "=", id)
+    .limit(1);
+
+  try {
+    result = await datastore.runQuery(query);
+  } catch (err) {
+    console.error("ERROR:", err);
+  }
+
+  if (result[0].length > 0) {
+    bucketName = "bahanbaku-assets";
+    const bucket = cloudStorage.bucket(bucketName);
+    const { originalname, buffer } = file;
+    const ext = originalname.split(".")[1];
+    blob = bucket.file("user/" + id + "." + ext);
+    const blobStream = blob.createWriteStream({
+      resumable: false,
+    });
+
+    blobStream
+      .on("finish", () => {
+        data = {
+          bucketName: this.bucketName,
+          blobName: this.blob.name,
+          result: this.result,
+        };        
+        console.log("Upload Done");                
+        updateProfilePictureInformation(datastore, data);
+        return true;
+      })
+      .on("error", () => {
+        console.log("Failed Upload Image");
+        return false;
+      })
+      .end(buffer);
+  } else {
+    console.log("User with that ID doesn't exits");
     return false;
   }
 }
@@ -308,24 +373,24 @@ async function addBookmark(datastore, id, bookmarkString) {
     bookmarkFinal.push(bookmarkString);
 
     // Remove Duplicate
-    bookmarkFinal = new Set(bookmarkFinal)
-    bookmarkFinal = Array.from(bookmarkFinal)
+    bookmarkFinal = new Set(bookmarkFinal);
+    bookmarkFinal = Array.from(bookmarkFinal);
 
-    existingData["updatedAt"] = new Date().toJSON()
-    existingData["bookmark"] = bookmarkFinal
+    existingData["updatedAt"] = new Date().toJSON();
+    existingData["bookmark"] = bookmarkFinal;
 
-    const entity = objectToDatastoreObject(existingData)
+    const entity = objectToDatastoreObject(existingData);
 
     try {
       res = await datastore.update(entity);
       console.log(`User ${key.id} updated successfully.`);
-      return true
+      return true;
     } catch (err) {
       console.error("ERROR:", err);
     }
   } else {
     console.log("User Doesn't Exist");
-    return false
+    return false;
   }
 }
 
@@ -338,25 +403,25 @@ async function deleteBookmark(datastore, id, bookmarkString) {
     // Remove bookmark
     bookmarkIndex = existingData.bookmark.indexOf(bookmarkString);
     bookmarkFinal = [...existingData.bookmark];
-    if (bookmarkIndex > -1) {      
+    if (bookmarkIndex > -1) {
       bookmarkFinal.splice(bookmarkIndex, 1); // 2nd parameter means remove one item only
     }
 
-    existingData["updatedAt"] = new Date().toJSON()
-    existingData["bookmark"] = bookmarkFinal    
+    existingData["updatedAt"] = new Date().toJSON();
+    existingData["bookmark"] = bookmarkFinal;
 
-    const entity = objectToDatastoreObject(existingData)
+    const entity = objectToDatastoreObject(existingData);
 
     try {
       res = await datastore.update(entity);
       console.log(`User ${key.id} updated successfully.`);
-      return true
+      return true;
     } catch (err) {
       console.error("ERROR:", err);
     }
   } else {
     console.log("User Doesn't Exist");
-    return false
+    return false;
   }
 }
 
@@ -366,6 +431,7 @@ module.exports = {
   profile,
   update,
   updateLocation,
+  uploadPicture,
   deleteUser,
   addBookmark,
   deleteBookmark,
