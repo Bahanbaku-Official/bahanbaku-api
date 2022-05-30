@@ -1,6 +1,7 @@
 const { Datastore } = require("@google-cloud/datastore");
 const { Storage } = require("@google-cloud/storage");
 const fs = require("fs").promises;
+const axios = require("axios");
 
 require("dotenv").config();
 
@@ -95,20 +96,27 @@ async function main() {
   // console.log(ret !== false ? "Success delete Bookmark" : "Fail delete bookmark")
 
   photoName = "tes_foto.jpg";
-  photoObject = {};  
+  photoObject = {};
 
   async function uploadPhotoFromLocal() {
-    data = await fs.readFile(photoName, "binary");         
+    data = await fs.readFile(photoName, "binary");
     photoObject = {
       originalname: photoName,
-      buffer: Buffer.from(data,"binary"),
-    };          
+      buffer: Buffer.from(data, "binary"),
+    };
   }
 
-  await uploadPhotoFromLocal();  
+  // await uploadPhotoFromLocal();
 
-  ret = await uploadPicture(datastore, cloudStorage, "svMz9AIXjdhp", photoObject);
-  console.log(ret);
+  // ret = await uploadPicture(datastore, cloudStorage, "svMz9AIXjdhp", photoObject);
+  // console.log(ret);
+
+  origin = {
+    lat: -7.324724,
+    lng: 109.2290617,
+  };
+  // ret = await updateLocation(datastore, axios, "jglvppwQniPb", origin);
+  // console.log(ret !== false ? "Success update location, User ID :" + ret : "Fail update location")
 
   // Recipe
   recipe = {
@@ -148,7 +156,10 @@ async function main() {
 
   supplier = {
     name: "Rifqi Shop",
-    origin: [-7.424724, 109.2290617],
+    origin: {
+      lat: -7.424724,
+      lng: 109.2290617,
+    },
     address:
       "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Timur., Kabupaten Banyumas, Jawa Tengah",
     addressObj: {

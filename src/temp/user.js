@@ -4,6 +4,8 @@ const nanoid = customAlphabet(
   12
 );
 
+const { getSupplier } = require("./supplier");
+
 async function verifyUserExist(datastore, id) {
   const query = datastore
     .createQuery("Dev", "user")
@@ -83,7 +85,7 @@ async function register(datastore, req, role = "user") {
   user["email"] = req.email;
   user["password"] = req.password;
   user["picture"] = "";
-  user["origin"] = [];
+  user["origin"] = { lat: 0.0, lng: 0.0 };
   user["passwordChangedAt"] = user["createdAt"];
   user["bookmark"] = [];
   user["shipping"] = [];
@@ -197,7 +199,7 @@ async function update(datastore, id, req) {
 }
 
 async function updateProfilePictureInformation(datastore, data) {
-  console.log('Updating User Profile Picture Information');
+  console.log("Updating User Profile Picture Information");
   const publicUrl = `https://storage.googleapis.com/${data.bucketName}/${data.blobName}`;
   existingData = parseUserData(datastore, data.result);
 
@@ -243,8 +245,8 @@ async function uploadPicture(datastore, cloudStorage, id, file) {
           bucketName: this.bucketName,
           blobName: this.blob.name,
           result: this.result,
-        };        
-        console.log("Upload Done");                
+        };
+        console.log("Upload Done");
         updateProfilePictureInformation(datastore, data);
         return true;
       })
@@ -259,87 +261,82 @@ async function uploadPicture(datastore, cloudStorage, id, file) {
   }
 }
 
-async function updateLocation(datastore, id, origin) {
+async function updateLocation(datastore, axios, id, origin) {
   const result = await verifyUserExist(datastore, id);
 
-  if (result !== undefined) {
-    ({
-      key,
-      id,
-      createdAt,
-      picture,
-      username,
-      email,
-      bookmark,
-      shipping,
-      role,
-      passwordChangedAt,
-      password,
-      datastoreId,
-    } = parseUserData(datastore, result));
+  if (result[0].length > 0) {
+    const metrix_API_KEY = process.env.MAPS_METRIX_DISTANCE_API_KEY;
+    const initialPrice = 5000;
+    const pricePerKm = 1000;
 
-    entity = {
-      key: key,
-      data: [
-        {
-          name: "id",
-          value: id,
-        },
-        {
-          name: "createdAt",
-          value: createdAt,
-        },
-        {
-          name: "updatedAt",
-          value: new Date().toJSON(),
-        },
-        {
-          name: "username",
-          value: username,
-        },
-        {
-          name: "email",
-          value: email,
-        },
-        {
-          name: "password",
-          value: password,
-        },
-        {
-          name: "picture",
-          value: picture,
-        },
-        {
-          name: "origin",
-          value: origin,
-        },
-        {
-          name: "passwordChangedAt",
-          value: passwordChangedAt,
-        },
-        {
-          name: "bookmark",
-          value: bookmark,
-        },
-        {
-          name: "shipping",
-          value: shipping,
-        },
-        {
-          name: "role",
-          value: role,
-        },
-      ],
+    userData = parseUserData(datastore, result);    
+    userData["updatedAt"] = new Date().toJSON();
+    userData["origin"] = origin;
+    userOrigin = origin.lat + "," + origin.lng;
+
+    console.log(userData);
+
+    // Get Supplier Data
+    supplierData = await getSupplier(datastore)       
+    shippingArray = [];
+    supplierOriginArray = [];
+    supplierData.forEach((supplier) => {
+      shippingObject = {};
+      supplierOrigin = supplier.origin.join(","); // Change origin array to string , separate with ,
+      shippingObject["id"] = supplier.id;
+      shippingObject["cost"] = 0; // Set default cost value to 0
+      shippingArray.push(shippingObject);
+      supplierOriginArray.push(supplierOrigin);
+    });
+    // console.log(shippingArray);    
+    suppliersOrigin = supplierOriginArray.join("|"); // Create string of suppliers origin , separate with | (based on maps api specification)
+
+    // console.log(shippingArray);
+
+    axios
+    config = {
+      method: "get",
+      url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${userOrigin}&destinations=${suppliersOrigin}&key=${metrix_API_KEY}`,
+      headers: {},
     };
 
+    axiosResponse = {};
+
+    await axios(config)
+      .then(function (response) {
+        axiosResponse = response.data;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+
+    // Get list of distance
+    const distancesData = axiosResponse["rows"][0]["elements"]; // List of distances
+    for (let index = 0; index < distancesData.length; index++) {
+      const element = distancesData[index];
+      // console.log(element);
+      shippingArray[index]["cost"] =
+        initialPrice +
+        Math.round(element["distance"]["value"] / 1000) * pricePerKm; // Calculate shipping cost
+    }
+    // console.log(shippingArray);    
+    
+    userData["shipping"] = shippingArray    
+
+    const entity = objectToDatastoreObject(userData)    
+
+    console.log(entity);
     try {
       res = await datastore.update(entity);
-      console.log(`User ${key.id} updated successfully.`);
+      console.log(`User ${userData.id} updated successfully.`);
+      return userData["id"]
     } catch (err) {
       console.error("ERROR:", err);
+      return false
     }
   } else {
     console.log("User Doesn't Exist");
+    return false
   }
 }
 
