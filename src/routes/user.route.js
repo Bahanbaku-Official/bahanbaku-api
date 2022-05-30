@@ -8,12 +8,12 @@ router.post('/login', user.login);
 
 router.get('/profile',jwtMiddleware, user.profile);
 
-router.put('/update', user.update);
+router.put('/update',jwtMiddleware, user.update);
 
-router.post('/bookmarks/:id', user.addBookmark);
+router.post('/bookmarks/:id',jwtMiddleware, user.addBookmark);
 
-router.delete('/bookmarks/:id', user.deleteBookmark);
+router.delete('/bookmarks/:id',jwtMiddleware, user.deleteBookmark);
 
-router.delete('/delete/:id', user.delete);
+router.delete('/delete/:id',jwtMiddleware, user.delete);
 
 module.exports = router;

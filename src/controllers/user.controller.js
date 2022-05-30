@@ -1,6 +1,9 @@
 const datastore = require('../database/datastore');
 const nanoid = require('../config/nanoid');
 const jwt = require('jsonwebtoken');
+const parseUserData = require('../helpers/userdataParser');
+const objectToDatastoreObject = require('../helpers/objectDatastoreConverter');
+const verifyUserExist = require('../helpers/userExistenceVerifier');
 
 const register = async (req, res) => {
   const { email } = req.body;
@@ -94,9 +97,11 @@ const login = async (req, res) => {
 }
 
 const profile = async (req, res) => {
+  const { id } = req.user;
+
   const query = datastore
     .createQuery("Dev", "user")
-    .filter("id", "=", req.user.id)
+    .filter("id", "=", id)
     .limit(1);
 
   try {
@@ -122,86 +127,199 @@ const profile = async (req, res) => {
   }
 }
 
-const update = (req, res) => {
-  const { password } = req.body;
+const update = async (req, res) => {
+  const { email, username, password, newPassword } = req.body;
+  let result;
 
-  if (password) {
-    return res.status(200).json({
-      status: true,
-      message: 'this is update endpoint with password',
-      results: req.body,
+  const query = datastore
+    .createQuery("Dev", "user")
+    .filter("id", "=", req.user.id)
+    .filter("password", "=", password)
+    .limit(1);
+
+  try {
+    result = await datastore.runQuery(query);
+
+    if (result[0].length === 0) {
+      return res.status(401).json({
+        status: false,
+        message: 'wrong username / password',
+      })
+    }
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
     })
   }
 
-  if (location) {
+  oldData = parseUserData(datastore, result);
+  const passwordChangedAtNew = newPassword === "" 
+    ? oldData.passwordChangedAt : new Date().toJSON();
+  const passwordNew = newPassword ?? oldData.password;
+
+  oldData.username = username ?? oldData.username;
+  oldData.email = email ?? oldData.email;
+  oldData.passwordChangedAt = passwordChangedAtNew;
+  oldData.password = passwordNew;
+  oldData.updatedAt = new Date().toJSON();
+
+  const entity = objectToDatastoreObject(oldData);
+
+  try {
+    result = await datastore.update(entity);
     return res.status(200).json({
       status: true,
-      message: 'this is update endpoint with location',
-      results: req.body,
+      message: 'success update user',
+      results: {
+        id: req.user.id,
+      },
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
+}
+
+const _delete = async (req, res) => {
+  const { id } = req.params;
+
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({
+      status: false,
+      message: 'You is not an admin',
     })
   }
 
-  return res.status(200).json({
-    status: true,
-    message: 'this is update endpoint clear',
-    results: req.body,
-  })
-}
+  const result = await verifyUserExist(datastore, id);
+  try {
+    if (!result) throw 'query error';
 
-const _delete = (req, res) => {
-  const { id } = req.params;
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
 
-  return res.status(200).json({
-    status: true,
-    message: 'this is delete endpoint',
-    results: {
-      id,
-    },
-  })
-}
+    datastoreId = result[0][0][datastore.KEY]["id"];
+    const key = datastore.key({
+      namespace: "Dev",
+      path: ["user", parseInt(datastoreId, 10)],
+    });
 
-const addBookmark = (req, res) => {
-  const { id } = req.params;
-
-  if (id !== 'eJXCDdzd') {
-    return res.status(404).json({
+    deleteRes = await datastore.delete(key);
+    return res.status(200).json({
       status: true,
-      message: 'this is add bookmark endpoint when match not found',
+      message: 'success delete user',
       results: {
         id,
       },
     })
-  }
 
-  return res.status(200).json({
-    status: true,
-    message: 'this is add bookmark endpoint when match found',
-    results: {
-      id,
-    },
-  })
-}
 
-const deleteBookmark = (req, res) => {
-  const { id } = req.params;
-
-  if (id !== 'eJXCDdzd') {
-    return res.status(404).json({
-      status: true,
-      message: 'this is delete bookmark endpoint when match not found',
-      results: {
-        id,
-      },
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
     })
   }
+}
 
-  return res.status(200).json({
-    status: true,
-    message: 'this is delete bookmark endpoint when match found',
-    results: {
-      id,
-    },
-  })
+const addBookmark = async (req, res) => {
+  const { id } = req.params;
+  const { id: userId } = req.user;
+
+  const result = await verifyUserExist(datastore, userId);
+  try {
+    if (!result) throw 'query error';
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    oldData = parseUserData(datastore, result);
+
+    newBookmark = [...oldData.bookmark];
+    newBookmark.push(id);
+
+    newBookmark = [...new Set(newBookmark)];
+
+    oldData["updatedAt"] = new Date().toJSON();
+    oldData["bookmark"] = newBookmark;
+
+    const entity = objectToDatastoreObject(oldData);
+
+    await datastore.update(entity);
+    return res.status(200).json({
+      status: true,
+      message: 'success add bookmark',
+      results: {},
+    })
+
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
+}
+
+const deleteBookmark = async (req, res) => {
+  const { id } = req.params;
+  const { id: userId } = req.user;
+
+  const result = await verifyUserExist(datastore, userId);
+  try {
+    if (!result) throw 'query error';
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found (user)',
+      })
+    }
+
+    oldData = parseUserData(datastore, result);
+
+    deletedIndex = oldData.bookmark.indexOf(id);
+    if (deletedIndex === -1) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found (bookmark)',
+      })
+    }
+
+    newBookmark = [...oldData.bookmark];
+    newBookmark.splice(deletedIndex, 1);
+
+    oldData["updatedAt"] = new Date().toJSON();
+    oldData["bookmark"] = newBookmark;
+
+    const entity = objectToDatastoreObject(oldData);
+
+    await datastore.update(entity);
+    return res.status(200).json({
+      status: true,
+      message: 'success delete bookmark',
+      results: {},
+    })
+
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
 }
 
 module.exports = {
