@@ -36,18 +36,18 @@ function parseSingleSupplierData(datastore, supplierData) {
 function parseMultiSupplierData(datastore, supplierData) {
   supplierArray = [];
   supplierData[0].forEach((supplier) => {
-    const createdAt = supplierData[0][0]["createdAt"];
-    const updatedAt = supplierData[0][0]["updatedAt"];
-    const id = supplierData[0][0]["id"];
-    const name = supplierData[0][0]["name"];
-    const origin = supplierData[0][0]["origin"];
-    const address = supplierData[0][0]["address"];
-    const address_obj = supplierData[0][0]["address_obj"];
-    const product = supplierData[0][0]["product"];
-    const contact = supplierData[0][0]["contact"];
-    const image = supplierData[0][0]["image"];
+    const createdAt = supplier["createdAt"];
+    const updatedAt = supplier["updatedAt"];
+    const id = supplier["id"];
+    const name = supplier["name"];
+    const origin = supplier["origin"];
+    const address = supplier["address"];
+    const address_obj = supplier["address_obj"];
+    const product = supplier["product"];
+    const contact = supplier["contact"];
+    const image = supplier["image"];
 
-    const key = supplierData[0][0][datastore.KEY];
+    const key = supplier[datastore.KEY];
 
     supplierObject = {
       key: key,
