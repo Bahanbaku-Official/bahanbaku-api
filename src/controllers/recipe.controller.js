@@ -1,127 +1,231 @@
-const recipes = [
-  {
-    id: "pQLi6pat",
-    title: "nasi goreng jawa",
-    servings: 3,
-    times: 45,
-    ingredients: [
-      "1600 g nasi putih",
-      "2 butir telur, kocok lepas",
-      "1 buah daging paha ayam atas bawah, potong agak tipis",
-      "6 buah bakso sapi, iris",
-      "5 lembar kol, buang tulang, iris kasar",
-      "6 batang caisim, potong 3 cm",
-      "2 sdm Bango Kecap Manis",
-      "1 bungkus Royco Bumbu Komplit Nasi Goreng",
-      "1 sdt garam",
-      "⅛ sdt merica putih bubuk",
-      "2 batang daun bawang, iris miring",
-      "2 sdm minyak, untuk menumis",
-      "3 siung bawang putih, goreng",
-      "4 butir kemiri, goreng",
-      "6 butir bawang merah",
-      "3 buah cabai merah besar",
-      "5 butir ebi"
-    ],
-    steps: [
-      "1 Panaskan minyak. Tumis bumbu halus sampai harum. Tambahkan telur di tengah wajan. Aduk sampai berbutir.",
-      "2 Masukkan ayam, aduk hingga matang. Masukkan bakso sapi, aduk sebentar. Tambahkan kol dan caisim. Aduk sampai setengah layu.",
-      "3 Masukkan nasi. Aduk-aduk. Tambahkan Bango Kecap Manis, Royco Bumbu Komplit Nasi Goreng, garam, dan merica. Aduk sampai matang.",
-      "4 Masukkan daun bawang. Aduk rata. Sajikan."
-    ],
-    description: "Resep nasi goreng Jawa merupakan salah satu menu makanan rumahan yang jadi andalan di kala para ratu dapur sedang tak punya waktu memasak atau tak punya bahan masakan di kulkas Bahan-bahannya yang sederhana dan hampir selalu ada di setiap rumah membuat resep nasi goreng ini sangat mudah diaplikasikan kapan saja",
-    author: "Dilla",
-    image: "https://storage.googleapis.com/bahanbaku/recipe/pQLi6pat.png",
-    tags: [
-      "Nasi Goreng"
-    ]
-  }
-]
+const nanoid = require("../config/nanoid");
+const datastore = require("../database/datastore");
+const objectToDatastoreObject = require("../helpers/objectDatastoreConverter");
+const parseRecipeData = require("../helpers/recipeDataParser");
+const verifyRecipeExist = require("../helpers/recipeExistenceVerifier");
 
-const findAll = (req, res) => {
+const findAll = async (req, res) => {
   const { search, featured, new: latest } = req.query;
 
   if (search) {
-    return res.status(200).json({
-      success: true,
-      message: "get recipe by query",
-      results: {
-        recipes
-      }
-    })
+    query = datastore
+      .createQuery("Dev", "recipe")
+      .filter("title", ">=", titleCase(search));
+  } else if (featured === "1") {
+    query = datastore
+      .createQuery("Dev", "recipe")
+      .order("createdAt", {
+        descending: true,
+      })
+      .limit(5);
+  } else if (latest === "1") {
+    query = datastore
+      .createQuery("Dev", "recipe")
+      .order("totalViews", {
+        descending: true,
+      })
+      .limit(5);
+  } else {
+    query = datastore.createQuery("Dev", "recipe");
   }
 
-  if (featured === "1") {
+  try {
+    const result = await datastore.runQuery(query);
     return res.status(200).json({
       success: true,
-      message: "get featured recipe",
-      results: {
-        recipes
-      }
+      message: "success get recipes",
+      results: result[0],
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
     })
   }
+}
 
-  if (latest === "1") {
-    return res.status(200).json({
-      success: true,
-      message: "get latest recipe",
-      results: {
-        recipes
-      }
-    })
-  }
+const findById = async (req, res) => {
+  const { id } = req.params;
 
-  return res.status(200).json({
-    success: true,
-    message: "success get recipes",
-    results: {
-      recipes
+  try {
+    result = await verifyRecipeExist(datastore, id);
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
     }
-  })
+
+    oldData = parseRecipeData(datastore, result);
+    oldData.totalViews += 1;
+
+    entity = objectToDatastoreObject(oldData);
+    await datastore.update(entity);
+
+    return res.status(200).json({
+      status: true,
+      message: 'success get recipe',
+      results: oldData,
+    })
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
 }
 
-const findById = (req, res) => {
-  const { id } = req.params;
+const create = async (req, res) => {
+  const { title } = req.body;
+  const { role } = req.user;
 
-  return res.status(200).json({
-    success: true,
-      message: `success get ${id} recipe`,
+  if (role !== 'admin') {
+    return res.status(403).json({
+      status: false,
+      message: 'You is not an admin',
+    })
+  }
+
+  const key = datastore.key({
+    namespace: "Dev",
+    path: ["recipe"],
+  });
+
+  const entity = {
+    key,
+    data: {
+      ...req.body,
+      id: nanoid(),
+      createdAt: new Date().toJSON(),
+      updatedAt: new Date().toJSON(),
+      rating: 0.0,
+      totalViews: 0,
+    }
+  }
+
+  const query = datastore
+    .createQuery("Dev", "recipe")
+    .filter("title", "=", title);
+
+  const result = await datastore.runQuery(query);
+
+  if (result[0].length > 0) {
+    return res.status(409).json({
+      status: false,
+      message: 'Recipe has already exist',
+    })
+  }
+
+  try {
+    await datastore.save(entity);
+    return res.status(200).json({
+      status: true,
+      message: 'success create recipe',
       results: {
-        recipe: recipes[0]
-      }
-  })
+        id: entity.data.id,
+      },
+    })
+  } catch (err) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
 }
 
-const create = (req, res) => {
-  return res.status(200).json({
-    success: true,
-      message: `success create recipe`,
-      results: req.body
-  })
-}
-
-const update = (req, res) => {
+const update = async (req, res) => {
   const { id } = req.params;
+  const recipe = req.body;
+  const { role } = req.user;
 
-  return res.status(200).json({
-    success: true,
-      message: `success update recipe`,
+  if (role !== 'admin') {
+    return res.status(403).json({
+      status: false,
+      message: 'You is not an admin',
+    })
+  }
+
+  try {
+    const result = await verifyRecipeExist(datastore, id);
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    const oldData = parseRecipeData(datastore, result);
+    recipe.key = oldData.key;
+    recipe.id = oldData.id;
+    recipe.createdAt = oldData.createdAt;
+    recipe.updatedAt = new Date().toJSON();
+    recipe.totalViews = oldData.totalViews;
+    recipe.rating = oldData.rating;
+
+    const entity = objectToDatastoreObject(recipe);
+    await datastore.update(entity);
+
+    return res.status(200).json({
+      status: true,
+      message: 'success update recipe',
       results: {
-        id,
-      }
-  })
+        id: entity.data.id,
+      },
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
 }
 
-const _delete = (req, res) => {
+const _delete = async (req, res) => {
   const { id } = req.params;
+  const { role } = req.user;
 
-  return res.status(200).json({
-    success: true,
-      message: `success delete recipe`,
+  if (role !== 'admin') {
+    return res.status(403).json({
+      status: false,
+      message: 'You is not an admin',
+    })
+  }
+
+  try {
+    const result = await verifyRecipeExist(datastore, id);
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    const datastoreId = result[0][0][datastore.KEY].id;
+    const key = datastore.key({
+      namespace: "Dev",
+      path: ["recipe", parseInt(datastoreId, 10)],
+    });
+
+    await datastore.delete(key);
+
+    return res.status(200).json({
+      status: true,
+      message: 'success delete recipe',
       results: {
-        id,
-      }
-  })
+        id: result[0][0].id,
+      },
+    })
+
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
 }
 
 module.exports = {
