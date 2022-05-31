@@ -1,108 +1,170 @@
-const suppliers = [
-  {
-    id: "gJDNQCOC",
-    name: "Warung Toni",
-    origin: [
-      -7.424724,
-      109.2290617
-    ],
-    address: "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
-    addressObj: {
-      subDistrict: "Purwokerto Wetan",
-      district: "Purwokerto Timur",
-      city: "Banyumas",
-      province: "Jawa Tengah",
-      zipCode: "53111"
-    },
-    product: [
-      {
-        name: "Frisian Flag susu UHT 900ml",
-        price: 13900
-      },
-      {
-        name: "Alini Gula Halus 500gr",
-        price: 20000
-      },
-      {
-        name: "Telur 1kg",
-        price: 13000
-      },
-      {
-        name: "DOLPIN Garam Dapur 500gr",
-        price: 10500
-      },
-      {
-        name: "Beras Ramos 1kg",
-        price: 14000
-      },
-      {
-        name: "Bawang putih 1kg",
-        price: 32000
-      },
-      {
-        name: "Bawang merah 1kg",
-        price: 37000
-      },
-      {
-        name: "Santan sasa 65ml",
-        price: 3500
-      }
-    ]
+const nanoid = require("../config/nanoid");
+const datastore = require("../database/datastore");
+const objectToDatastoreObject = require("../helpers/objectDatastoreConverter");
+const parseRecipeData = require("../helpers/recipeDataParser");
+const verifySupplierExist = require("../helpers/supplierExistenceVerifier");
+
+const findAll = async (_, res) => {
+  const query = datastore.createQuery("Dev", "supplier");
+
+  try {
+    const result = await datastore.runQuery(query);
+    return res.status(200).json({
+      success: true,
+      message: "success get suppliers",
+      results: result[0],
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
   }
-]
+}
 
-const findAll = (_, res) => {
-  return res.status(200).json({
-    success: true,
-    message: "success get suppliers",
-    results: {
-      suppliers
+const findById = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    result = await verifySupplierExist(datastore, id);
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
     }
-  })
+
+    return res.status(200).json({
+      status: true,
+      message: 'success get supplier by id',
+      results: result[0][0],
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
 }
 
-const findById = (req, res) => {
+const create = async (req, res) => {
+  const { name } = req.body;
+
+  const query = datastore
+    .createQuery("Dev", "supplier")
+    .filter("name", "=", name);
+  
+  try {
+    const result = await datastore.runQuery(query);
+    if (result[0].length > 0) {
+      return res.status(409).json({
+        status: false,
+        message: 'Supplier has already exist',
+      })
+    }
+
+    const key = datastore.key({
+      namespace: "Dev",
+      path: ["supplier"],
+    });
+    const entity = {
+      key,
+      data: {
+        ...req.body,
+        id: nanoid(),
+        createdAt: new Date().toJSON(),
+        updatedAt: new Date().toJSON(),
+      }
+    }
+
+    await datastore.save(entity);
+    return res.status(200).json({
+      status: true,
+      message: 'success create supplier',
+      results: {
+        id: entity.data.id,
+      },
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
+}
+
+const update = async (req, res) => {
+  const { id } = req.params;
+  const supplier = req.body;
+
+  try {
+    const result = await verifySupplierExist(datastore, id);
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    const oldData = parseRecipeData(datastore, result);
+    supplier.key = oldData.key;
+    supplier.id = oldData.id;
+    supplier.createdAt = oldData.createdAt;
+    supplier.updatedAt = new Date().toJSON();
+
+    const entity = objectToDatastoreObject(supplier);
+    await datastore.update(entity);
+
+    return res.status(200).json({
+      status: true,
+      message: 'success update supplier',
+      results: {
+        id: supplier.id,
+      },
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
+}
+
+const _delete = async (req, res) => {
   const { id } = req.params;
 
-  return res.status(200).json({
-    success: true,
-      message: `success get ${id} supplier`,
+  try {
+    const result = await verifySupplierExist(datastore, id);
+
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    const datastoreId = result[0][0][datastore.KEY].id;
+    const key = datastore.key({
+      namespace: "Dev",
+      path: ["supplier", parseInt(datastoreId, 10)],
+    });
+
+    await datastore.delete(key);
+
+    return res.status(200).json({
+      status: true,
+      message: 'success delete supplier',
       results: {
-        supplier: suppliers[0]
-      }
-  })
-}
-
-const create = (req, res) => {
-  return res.status(200).json({
-    success: true,
-      message: `success create supplier`,
-      results: req.body
-  })
-}
-
-const update = (req, res) => {
-  const { id } = req.params;
-
-  return res.status(200).json({
-    success: true,
-      message: `success update supplier`,
-      results: {
-        id,
-      }
-  })
-}
-
-const _delete = (req, res) => {
-  const { id } = req.params;
-
-  return res.status(200).json({
-    success: true,
-      message: `success delete supplier`,
-      results: {
-        id,
-      }
-  })
+        id: result[0][0].id,
+      },
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
 }
 
 module.exports = {
