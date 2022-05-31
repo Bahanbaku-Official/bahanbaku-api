@@ -80,14 +80,6 @@ const findById = async (req, res) => {
 
 const create = async (req, res) => {
   const { title } = req.body;
-  const { role } = req.user;
-
-  if (role !== 'admin') {
-    return res.status(403).json({
-      status: false,
-      message: 'You is not an admin',
-    })
-  }
 
   const key = datastore.key({
     namespace: "Dev",
@@ -139,14 +131,6 @@ const create = async (req, res) => {
 const update = async (req, res) => {
   const { id } = req.params;
   const recipe = req.body;
-  const { role } = req.user;
-
-  if (role !== 'admin') {
-    return res.status(403).json({
-      status: false,
-      message: 'You is not an admin',
-    })
-  }
 
   try {
     const result = await verifyRecipeExist(datastore, id);
@@ -185,14 +169,6 @@ const update = async (req, res) => {
 
 const _delete = async (req, res) => {
   const { id } = req.params;
-  const { role } = req.user;
-
-  if (role !== 'admin') {
-    return res.status(403).json({
-      status: false,
-      message: 'You is not an admin',
-    })
-  }
 
   try {
     const result = await verifyRecipeExist(datastore, id);

@@ -187,13 +187,6 @@ const update = async (req, res) => {
 const _delete = async (req, res) => {
   const { id } = req.params;
 
-  if (req.user.role !== 'admin') {
-    return res.status(403).json({
-      status: false,
-      message: 'You is not an admin',
-    })
-  }
-
   const result = await verifyUserExist(datastore, id);
   try {
     if (!result) throw 'query error';
