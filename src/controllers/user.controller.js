@@ -444,6 +444,58 @@ const deleteBookmark = async (req, res) => {
   }
 }
 
+const getNearbyRestaurant = async (req, res) => {
+  const { keyword } = req.body;
+  const { id } = req.user;
+  const PLACES_API_KEY = process.env.MAPS_PLACES_API_KEY
+
+  try {
+    const result = await verifyUserExist(datastore, id);
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+
+    const userData = parseUserData(datastore, result);
+    const { lat, lng } = userData.origin;
+    origin = `${lat},${lng}`;
+    radius = 10000;
+
+    const axiosResponse = await axios.get(
+      `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${origin}&radius=${radius}&type=restaurant&keyword=${keyword}&key=${PLACES_API_KEY}`
+    )
+
+    const restaurants = axiosResponse.data.results.filter((
+      {business_status, permanently_closed}
+    ) => {
+      return business_status === 'OPERATIONAL' || (business_status === 'CLOSED_TEMPORARILY' && permanently_closed === false) 
+    }).map((restaurant) => {
+      return (({name, rating, user_ratings_total, geometry}) => {
+        return {
+          restaurantName: name,
+          rating,
+          user_ratings_total,
+          location: geometry.location
+        }
+      })(restaurant)
+    })
+
+    return res.status(200).json({
+      status: true,
+      message: 'success get nearby resto',
+      results: restaurants,
+    })
+  } catch (error) {
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -454,4 +506,5 @@ module.exports = {
   delete: _delete,
   addBookmark,
   deleteBookmark,
+  getNearbyRestaurant,
 }

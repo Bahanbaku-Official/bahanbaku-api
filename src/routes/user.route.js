@@ -22,4 +22,6 @@ router.delete('/bookmarks/:id',jwtMiddleware, user.deleteBookmark);
 
 router.delete('/delete/:id',jwtMiddleware, isAdmin, user.delete);
 
+router.get('/nearby-resto',jwtMiddleware, user.getNearbyRestaurant);
+
 module.exports = router;
