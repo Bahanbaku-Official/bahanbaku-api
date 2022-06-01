@@ -1,9 +1,11 @@
 const datastore = require('../database/datastore');
+const cloudStorage = require('../config/cloudstorage');
 const nanoid = require('../config/nanoid');
 const jwt = require('jsonwebtoken');
 const parseUserData = require('../helpers/userdataParser');
 const objectToDatastoreObject = require('../helpers/objectDatastoreConverter');
 const verifyUserExist = require('../helpers/userExistenceVerifier');
+const { default: axios } = require('axios');
 
 const register = async (req, res) => {
   const { email } = req.body;
@@ -184,6 +186,133 @@ const update = async (req, res) => {
   }
 }
 
+const updateLocation = async (req, res) => {
+  const { id } = req.user;
+  const { lat, lng } = req.body.location;
+  const METRIX_API_KEY = process.env.MAPS_METRIX_DISTANCE_API_KEY;
+  const initialPrice = 2000;
+  const perKmPrice = 150;
+
+  try {
+    const result = await verifyUserExist(datastore, id);
+    if (result[0].length > 0) {
+      if (result[0].length === 0) {
+        return res.status(404).json({
+          status: false,
+          message: '404 Resource Not Found',
+        })
+      }
+
+      userData = parseUserData(datastore, result);
+      userData.updatedAt = new Date().toJSON();
+      userData.origin = req.body.location;
+      userOrigin = `${lat},${lng}`;
+
+      const suppliers = await datastore.runQuery(
+        datastore.createQuery("Dev", "supplier")
+      );
+      shippings = [];
+      supplierOriginArray = [];
+      suppliers[0].forEach((supplier) => {
+        supplierOrigin = supplier.origin.join(',');
+        shipping = {}
+        shipping.id = supplier.id;
+        shipping.cost = 0;
+        shippings.push(shipping);
+        supplierOriginArray.push(supplierOrigin);
+      })
+
+      suppliersOriginString = supplierOriginArray.join('|');
+
+      const axiosResponse = await axios.get(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${userOrigin}&destinations=${suppliersOriginString}&key=${METRIX_API_KEY}`
+      )
+
+      const distancesArray = axiosResponse.data.rows[0].elements;
+      distancesArray.forEach((value, index) => {
+        shippings[index].cost = initialPrice + Math.round(value.distance.value / 1000) * perKmPrice;
+      })
+
+      userData.shipping = shippings;
+
+      const entity = objectToDatastoreObject(userData);
+
+      await datastore.update(entity);
+
+      return res.status(200).json({
+        status: true,
+        message: 'success update user location',
+        results: {
+          id: userData.id
+        },
+      })
+    }
+
+
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+      error,
+    })
+  }
+}
+
+const uploadPicture = async (req, res) => {
+  const { id } = req.user;
+  bucketName = "bahanbaku-assets";
+
+  try {
+    const result = await verifyUserExist(datastore, id);
+    if (result[0].length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: '404 Resource Not Found',
+      })
+    }
+    
+    const bucket = cloudStorage.bucket(bucketName);
+    const { originalname, buffer } = req.file;
+    const ext = originalname.split('.')[1];
+    const blob = bucket.file(`user/${id}.${ext}`);
+    const blobStream = blob.createWriteStream({
+      resumeable: false,
+    })
+
+    blobStream
+      .on('finish', async () => {
+        const publicUrl = `https://storage.googleapis.com/${bucketName}/${blob.name}`;
+        oldData = parseUserData(datastore, result);
+
+        oldData.updatedAt = new Date().toJSON();
+        oldData.picture = publicUrl;
+
+        const entity = objectToDatastoreObject(oldData);
+
+        await datastore.update(entity);
+
+        return res.status(200).json({
+          status: true,
+          message: 'success update user profile picture',
+          results: {
+            id: oldData.id,
+          },
+        })
+      })
+      .on('error', () => {
+        throw 'upload failed';
+      })
+      .end(buffer);
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({
+      status: false,
+      message: '400 Bad Request',
+    })
+  }
+}
+
 const _delete = async (req, res) => {
   const { id } = req.params;
 
@@ -320,6 +449,8 @@ module.exports = {
   login,
   profile,
   update,
+  updateLocation,
+  uploadPicture,
   delete: _delete,
   addBookmark,
   deleteBookmark,
