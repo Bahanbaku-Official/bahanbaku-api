@@ -15,6 +15,7 @@ const {
   uploadPicture,
   addBookmark,
   deleteBookmark,
+  getNearbyRestaurant,
 } = require("./user");
 
 const {
@@ -32,6 +33,10 @@ const {
   deleteSupplier,
   getSupplier,
 } = require("./supplier");
+
+const {
+  getIngredient
+} = require('./ingredients')
 
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
@@ -117,6 +122,9 @@ async function main() {
   };
   // ret = await updateLocation(datastore, axios, "jglvppwQniPb", origin);
   // console.log(ret !== false ? "Success update location, User ID :" + ret : "Fail update location")
+
+  // ret = await getNearbyRestaurant(datastore,"jglvppwQniPb","nasi goreng")
+  // console.log(ret);
 
   // Recipe
   recipe = {
@@ -221,5 +229,9 @@ async function main() {
 
   // ret = await deleteSupplier(datastore,"j9Dy4kGK3p66")
   // console.log("Supplier ID : " + ret);
+
+  // Ingredient
+  // getIngredient(datastore,"QhbYOS9ZUrV5","telur,gula,garam")
+
 }
 main();

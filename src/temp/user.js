@@ -3,6 +3,7 @@ const nanoid = customAlphabet(
   "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
   12
 );
+const axios = require("axios");
 
 const { getSupplier } = require("./supplier");
 
@@ -269,7 +270,7 @@ async function updateLocation(datastore, axios, id, origin) {
     const initialPrice = 5000;
     const pricePerKm = 1000;
 
-    userData = parseUserData(datastore, result);    
+    userData = parseUserData(datastore, result);
     userData["updatedAt"] = new Date().toJSON();
     userData["origin"] = origin;
     userOrigin = origin.lat + "," + origin.lng;
@@ -277,7 +278,7 @@ async function updateLocation(datastore, axios, id, origin) {
     console.log(userData);
 
     // Get Supplier Data
-    supplierData = await getSupplier(datastore)       
+    supplierData = await getSupplier(datastore);
     shippingArray = [];
     supplierOriginArray = [];
     supplierData.forEach((supplier) => {
@@ -288,12 +289,12 @@ async function updateLocation(datastore, axios, id, origin) {
       shippingArray.push(shippingObject);
       supplierOriginArray.push(supplierOrigin);
     });
-    // console.log(shippingArray);    
+    // console.log(shippingArray);
     suppliersOrigin = supplierOriginArray.join("|"); // Create string of suppliers origin , separate with | (based on maps api specification)
 
     // console.log(shippingArray);
 
-    axios
+    axios;
     config = {
       method: "get",
       url: `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${userOrigin}&destinations=${suppliersOrigin}&key=${metrix_API_KEY}`,
@@ -319,24 +320,24 @@ async function updateLocation(datastore, axios, id, origin) {
         initialPrice +
         Math.round(element["distance"]["value"] / 1000) * pricePerKm; // Calculate shipping cost
     }
-    // console.log(shippingArray);    
-    
-    userData["shipping"] = shippingArray    
+    // console.log(shippingArray);
 
-    const entity = objectToDatastoreObject(userData)    
+    userData["shipping"] = shippingArray;
+
+    const entity = objectToDatastoreObject(userData);
 
     console.log(entity);
     try {
       res = await datastore.update(entity);
       console.log(`User ${userData.id} updated successfully.`);
-      return userData["id"]
+      return userData["id"];
     } catch (err) {
       console.error("ERROR:", err);
-      return false
+      return false;
     }
   } else {
     console.log("User Doesn't Exist");
-    return false
+    return false;
   }
 }
 
@@ -422,6 +423,59 @@ async function deleteBookmark(datastore, id, bookmarkString) {
   }
 }
 
+async function getNearbyRestaurant(datastore, id, keyword) {
+  const placesApiKey = process.env.MAPS_PLACES_API_KEY;
+
+  userData = await profile(datastore, id);
+  userOrigin = userData.origin.lat + "," + userData.origin.lng;
+  radius = 10000;
+
+  // Axios
+  config = {
+    method: "get",
+    url: `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${userOrigin}&radius=${radius}&type=restaurant&keyword=${keyword}&key=${placesApiKey}`,
+    headers: {},
+  };
+
+  responseData = {};
+  await axios(config)
+    .then(function (response) {
+      responseData = response.data;
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+
+  listRestaurantData = responseData.results;
+  listReturnData = [];
+
+  listRestaurantData.forEach((restaurant) => {
+    returnDataObject = {};
+    businessStatus = restaurant.business_status;
+
+    if (businessStatus === "OPERATIONAL") {
+      returnDataObject = {
+        restaurantName: restaurant.name,
+        rating: restaurant.rating,
+        user_ratings_total: restaurant.user_ratings_total,
+        location: restaurant.geometry.location,
+      };
+      listReturnData.push(returnDataObject);
+    } else if (businessStatus === "CLOSED_TEMPORARILY") {
+      if (restaurant.permanently_closed === false) {
+        returnDataObject = {
+          restaurantName: restaurant.name,
+          rating: restaurant.rating,
+          user_ratings_total: restaurant.user_ratings_total,
+          location: restaurant.geometry.location,
+        };
+        listReturnData.push(returnDataObject);
+      }
+    }
+  });
+  return listReturnData
+}
+
 module.exports = {
   register,
   login,
@@ -432,4 +486,5 @@ module.exports = {
   deleteUser,
   addBookmark,
   deleteBookmark,
+  getNearbyRestaurant,
 };
