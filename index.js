@@ -9,6 +9,7 @@ require("dotenv").config();
 const user = require('./src/routes/user.route');
 const recipe = require('./src/routes/recipe.route');
 const supplier = require('./src/routes/supplier.route');
+const ingredient = require('./src/routes/ingredient.route');
 
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
@@ -32,6 +33,7 @@ app.use(cors());
 app.use('/user', user);
 app.use('/recipe', recipe);
 app.use('/supplier', supplier);
+app.use('/ingredients', ingredient);
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {
