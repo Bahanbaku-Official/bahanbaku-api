@@ -233,6 +233,9 @@ async function main() {
   // console.log("Supplier ID : " + ret);
 
   // Ingredient
-  getIngredient(datastore,"jglvppwQniPb","telur,gula,garam")
+  ret = await getIngredient(datastore,"jglvppwQniPb","gula,babi")
+  console.log(ret);
+  // console.log(ret["under"]);  
+  // console.log(ret["under"][0]);  
 }
 main();
