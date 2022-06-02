@@ -252,6 +252,11 @@ function magicCalculation(
             productListExhausted[j] = true;
           }
         }
+
+        // New 
+        completeSupplier["missingProduct"] = completeSupplier["suppliers"][0]["missingProduct"]
+        delete completeSupplier["suppliers"][0]["missingProduct"]
+        // End New
         listBestSupplier.push(completeSupplier);
         if (productListExhausted.every(productExhausted)) {
           // console.log("All product exhausted");
