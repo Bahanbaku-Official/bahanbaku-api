@@ -244,6 +244,9 @@ function magicCalculation(
             productListExhausted[j] = true;
           }
         }
+        completeSupplier["missingProduct"] = completeSupplier["suppliers"][0]["missingProduct"]
+        delete completeSupplier["suppliers"][0]["missingProduct"]
+
         listBestSupplier.push(completeSupplier);
         if (productListExhausted.every(productExhausted)) {
           break;
