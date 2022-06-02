@@ -34,9 +34,7 @@ const {
   getSupplier,
 } = require("./supplier");
 
-const {
-  getIngredient
-} = require('./ingredients')
+const { getIngredient } = require("./ingredients");
 
 const datastore = new Datastore({
   projectId: process.env.GCP_PROJECT_ID,
@@ -117,11 +115,15 @@ async function main() {
   // console.log(ret);
 
   origin = {
-    lat: -7.324724,
-    lng: 109.2290617,
+    lat: -7.418181,
+    lng: 109.244560,
   };
   // ret = await updateLocation(datastore, axios, "jglvppwQniPb", origin);
-  // console.log(ret !== false ? "Success update location, User ID :" + ret : "Fail update location")
+  // console.log(
+  //   ret !== false
+  //     ? "Success update location, User ID :" + ret
+  //     : "Fail update location"
+  // );
 
   // ret = await getNearbyRestaurant(datastore,"jglvppwQniPb","nasi goreng")
   // console.log(ret);
@@ -165,8 +167,8 @@ async function main() {
   supplier = {
     name: "Rifqi Shop",
     origin: {
-      lat: -7.424724,
-      lng: 109.2290617,
+      lat: -7.401030,
+      lng: 109.217449,
     },
     address:
       "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Timur., Kabupaten Banyumas, Jawa Tengah",
@@ -224,14 +226,13 @@ async function main() {
   // ret = await getSupplierById(datastore,"j9Dy4kGK3p66")
   // console.log(ret); // Response
 
-  // ret = await updateSupplier(datastore,"j9Dy4kGK3p66",supplier)
-  // console.log("Supplier ID : " + ret);
+    // ret = await updateSupplier(datastore,"j9Dy4kGK3p66",supplier)
+    // console.log("Supplier ID : " + ret);
 
   // ret = await deleteSupplier(datastore,"j9Dy4kGK3p66")
   // console.log("Supplier ID : " + ret);
 
   // Ingredient
-  // getIngredient(datastore,"QhbYOS9ZUrV5","telur,gula,garam")
-
+  getIngredient(datastore,"jglvppwQniPb","telur,gula,garam")
 }
 main();
