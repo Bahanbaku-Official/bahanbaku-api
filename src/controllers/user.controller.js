@@ -190,8 +190,12 @@ const updateLocation = async (req, res) => {
   const { id } = req.user;
   const { lat, lng } = req.body.location;
   const METRIX_API_KEY = process.env.MAPS_METRIX_DISTANCE_API_KEY;
-  const initialPrice = 2000;
-  const perKmPrice = 150;
+  const initialPrice = 5000;
+  const perKmPrice = 1000;
+  const distanceLimit = 50000;
+  const initialPriceLong = 200;
+  const perKmPriceLong = 50;
+
 
   try {
     const result = await verifyUserExist(datastore, id);
@@ -214,10 +218,12 @@ const updateLocation = async (req, res) => {
       shippings = [];
       supplierOriginArray = [];
       suppliers[0].forEach((supplier) => {
-        supplierOrigin = supplier.origin.join(',');
+        const { lat: orgLat, lng: orgLng } = supplier.origin;
+        supplierOrigin = `${orgLat},${orgLng}`;
         shipping = {}
         shipping.id = supplier.id;
         shipping.cost = 0;
+        shipping.distance = 0;
         shippings.push(shipping);
         supplierOriginArray.push(supplierOrigin);
       })
@@ -229,8 +235,13 @@ const updateLocation = async (req, res) => {
       )
 
       const distancesArray = axiosResponse.data.rows[0].elements;
-      distancesArray.forEach((value, index) => {
-        shippings[index].cost = initialPrice + Math.round(value.distance.value / 1000) * perKmPrice;
+      distancesArray.forEach((data, index) => {
+        shippings[index].distance = data.distance.value;
+        if (data.distance <= distanceLimit) {
+          shippings[index].cost = initialPrice + Math.round(data.distance.value / 1000) * perKmPrice;
+          return
+        }
+        shippings[index].cost = initialPriceLong + Math.round(data.distance.value / 1000) * perKmPriceLong;
       })
 
       userData.shipping = shippings;
