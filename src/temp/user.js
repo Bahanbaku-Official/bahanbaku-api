@@ -269,13 +269,14 @@ async function updateLocation(datastore, axios, id, origin) {
     const metrix_API_KEY = process.env.MAPS_METRIX_DISTANCE_API_KEY;
     const initialPrice = 5000;
     const pricePerKm = 1000;
+    const distanceDifferentiation = 50000;
+    const initialPriceLong = 200;
+    const pricePerKmLong = 50;
 
     userData = parseUserData(datastore, result);
     userData["updatedAt"] = new Date().toJSON();
     userData["origin"] = origin;
     userOrigin = origin.lat + "," + origin.lng;
-
-    console.log(userData);
 
     // Get Supplier Data
     supplierData = await getSupplier(datastore);
@@ -283,10 +284,15 @@ async function updateLocation(datastore, axios, id, origin) {
     supplierOriginArray = [];
     supplierData.forEach((supplier) => {
       shippingObject = {};
-      supplierOrigin = supplier.origin.join(","); // Change origin array to string , separate with ,
+      supplierOrigin = supplier.origin.lat + "," + supplier.origin.lng; // Change origin object to string , separate with ,
       shippingObject["id"] = supplier.id;
       shippingObject["cost"] = 0; // Set default cost value to 0
+      shippingObject["distance"] = 0;
+
+      // console.log(supplier);
+      // TODO add property
       shippingArray.push(shippingObject);
+
       supplierOriginArray.push(supplierOrigin);
     });
     // console.log(shippingArray);
@@ -311,22 +317,29 @@ async function updateLocation(datastore, axios, id, origin) {
         console.log(error);
       });
 
+    // console.log(config);
+
     // Get list of distance
     const distancesData = axiosResponse["rows"][0]["elements"]; // List of distances
     for (let index = 0; index < distancesData.length; index++) {
       const element = distancesData[index];
-      // console.log(element);
-      shippingArray[index]["cost"] =
-        initialPrice +
-        Math.round(element["distance"]["value"] / 1000) * pricePerKm; // Calculate shipping cost
+      distance = element["distance"]["value"];
+      if (distance <= distanceDifferentiation) {
+        shippingArray[index]["cost"] =
+          initialPrice + Math.round(distance / 1000) * pricePerKm; // Calculate shipping cost
+      }else{
+        shippingArray[index]["cost"] =
+        initialPriceLong + Math.round(distance / 1000) * pricePerKmLong; // Calculate shipping cost for long distance
+      }
+      shippingArray[index]["distance"] = distance;
     }
-    // console.log(shippingArray);
-
     userData["shipping"] = shippingArray;
+
+    // console.log(userData["shipping"]);
 
     const entity = objectToDatastoreObject(userData);
 
-    console.log(entity);
+    // console.log(entity);
     try {
       res = await datastore.update(entity);
       console.log(`User ${userData.id} updated successfully.`);
@@ -473,7 +486,7 @@ async function getNearbyRestaurant(datastore, id, keyword) {
       }
     }
   });
-  return listReturnData
+  return listReturnData;
 }
 
 module.exports = {
