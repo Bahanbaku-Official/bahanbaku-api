@@ -456,7 +456,7 @@ const deleteBookmark = async (req, res) => {
 }
 
 const getNearbyRestaurant = async (req, res) => {
-  const { keyword } = req.body;
+  const { keyword } = req.query;
   const { id } = req.user;
   const PLACES_API_KEY = process.env.MAPS_PLACES_API_KEY
 
@@ -483,11 +483,11 @@ const getNearbyRestaurant = async (req, res) => {
     ) => {
       return business_status === 'OPERATIONAL' || (business_status === 'CLOSED_TEMPORARILY' && permanently_closed === false) 
     }).map((restaurant) => {
-      return (({name, rating, user_ratings_total, geometry}) => {
+      return (({name, rating, user_ratings_total: userRatingsTotal, geometry}) => {
         return {
           restaurantName: name,
           rating,
-          user_ratings_total,
+          userRatingsTotal,
           location: geometry.location
         }
       })(restaurant)
