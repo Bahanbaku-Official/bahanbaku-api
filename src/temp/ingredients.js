@@ -58,9 +58,12 @@ function sortByTotalPrice(a, b) {
 function getSupplierSpecificInformation(supplierList, supplierId) {
   supplierInfoObject = {};
   for (let index = 0; index < supplierList.length; index++) {
+    const supplier = supplierList[index];
     if (supplier.id === supplierId) {
       supplierInfoObject["supplierName"] = supplier.name;
       supplierInfoObject["supplierContact"] = supplier.contact;
+      supplierInfoObject["missingProduct"] = [];
+      break;
     }
   }
   return supplierInfoObject;
@@ -74,6 +77,10 @@ function getSupplierAllInformation(supplierList, supplierId) {
       return supplier;
     }
   }
+}
+
+function supplierHasAtLeastOneIngredient(supplier) {
+  return supplier["products"].length > 0;
 }
 
 function magicCalculation(
@@ -106,8 +113,8 @@ function magicCalculation(
         productName = listProduct[k].name;
         productPrice = listProduct[k].price;
         productNameLower = productName.toLowerCase();
-        ingredientName = ingredientName.toLowerCase();
-        if (productNameLower.includes(ingredientName)) {
+        ingredientNameLower = ingredientName.toLowerCase();
+        if (productNameLower.includes(ingredientNameLower)) {
           // Check if ingredient exist
           isIngredientExist = true;
           productObject = {
@@ -117,7 +124,6 @@ function magicCalculation(
 
           // console.log(listSupplierIngredientsData[counter]);
           listSupplierIngredientsData[counter]["products"].push(productObject); // Ingredient exist
-
           listSupplierIngredientsData[counter]["totalPrice"] += productPrice;
 
           supplierIngredientPriceObject = {
@@ -128,18 +134,25 @@ function magicCalculation(
             productPlusShippingPrice:
               productPrice +
               listSupplierIngredientsData[counter]["shippingCost"],
+            supplierContact: supplierObject.contact,
           };
           listSupplierIngredientPrice[j].push(supplierIngredientPriceObject);
         }
       }
       if (isIngredientExist === false) {
-        listSupplierIngredientsData[counter]["products"].push(-1); // Ingredient doesn't exist
+        // listSupplierIngredientsData[counter]["products"].push(ingredientName); // Ingredient doesn't exist
         listSupplierIngredientsData[counter]["emptyIngredient"].push(j); // Push index of empty ingredient
+        listSupplierIngredientsData[counter]["missingProduct"].push(
+          ingredientName
+        );
       }
     }
     counter += 1;
   });
 
+  listSupplierIngredientsData = listSupplierIngredientsData.filter(
+    supplierHasAtLeastOneIngredient
+  );
   listSupplierIngredientsData.sort(compareByIngredientSupplierHave);
   temp = [];
   listSupplierIngredientPrice.forEach((arr) => {
@@ -158,6 +171,8 @@ function magicCalculation(
 
   for (let i = 0; i < listSupplierIngredientsData.length; i++) {
     supplier = listSupplierIngredientsData[i];
+    console.log(supplier);
+
     emptyIngredient = supplier["emptyIngredient"];
     emptyIngredientCount = emptyIngredient.length;
     currentSupplierTotalPrice = supplier["totalPrice"];
@@ -181,47 +196,55 @@ function magicCalculation(
         };
         for (let j = 0; j < emptyIngredientCount; j++) {
           ingredientMissingIndex = emptyIngredient[j]; // Return index of ingredient
+          // If ingredient not exist anywhere
+          isIngredientExist =
+            listSupplierIngredientPrice[ingredientMissingIndex].length > 0;          
+          if (isIngredientExist) {
+            // Fill supplier's missing ingredient with best ingredient
+            productData =
+              listSupplierIngredientPrice[ingredientMissingIndex][
+                productListIndex[j]
+              ];
 
-          // Fill supplier's missing ingredient with best ingredient
-          productData =
-            listSupplierIngredientPrice[ingredientMissingIndex][
-              productListIndex[j]
-            ];
+            newSupplierId = productData["supplierId"];
+            newSupplierName = productData["supplierName"];
+            newSupplierContact = productData["supplierContact"];
+            shippingCost = getSupplierShippingCost(
+              userShippingCost,
+              newSupplierId
+            );
+            supplierExistIndex = checkSupplierExist(
+              completeSupplier["suppliers"],
+              newSupplierId
+            );
 
-          newSupplierId = productData["supplierId"];
-          newSupplierName = productData["supplierName"];
-          shippingCost = getSupplierShippingCost(
-            userShippingCost,
-            newSupplierId
-          );
-          supplierExistIndex = checkSupplierExist(
-            completeSupplier["suppliers"],
-            newSupplierId
-          );
+            delete productData["supplierId"];
+            delete productData["supplierName"];
+            delete productData["productPlusShippingPrice"];
 
-          delete productData["supplierId"];
-          delete productData["supplierName"];
-          delete productData["productPlusShippingPrice"];
+            if (supplierExistIndex === -1) {
+              // If supplier is new
+              supplierObject = {
+                supplierId: newSupplierId,
+                supplierName: newSupplierName,
+                supplierContact: newSupplierContact,
+                shippingCost: shippingCost,
+                products: [productData],
+              };
+              // console.log(productData);
+              completeSupplier["suppliers"].push(supplierObject);
+              completeSupplier["totalPrice"] +=
+                productData.productPrice + shippingCost;
+            } else {
+              // If supplier is exist
+              completeSupplier["suppliers"][supplierExistIndex].push(
+                productData
+              );
+              completeSupplier["totalPrice"] += productData.productPrice;
+            }
 
-          if (supplierExistIndex === -1) {
-            // If supplier is new
-            supplierObject = {
-              supplierId: newSupplierId,
-              supplierName: newSupplierName,
-              shippingCost: shippingCost,
-              products: [productData],
-            };
-            // console.log(productData);
-            completeSupplier["suppliers"].push(supplierObject);
-            completeSupplier["totalPrice"] +=
-              productData.productPrice + shippingCost;
-          } else {
-            // If supplier is exist
-            completeSupplier["suppliers"][supplierExistIndex].push(productData);
-            completeSupplier["totalPrice"] += productData.productPrice;
+            productListIndex[j]++;
           }
-
-          productListIndex[j]++;
           if (
             productListIndex[j] ===
             listSupplierIngredientPrice[ingredientMissingIndex].length
@@ -308,19 +331,19 @@ async function getIngredient(datastore, id, ingredientString) {
       listOfSuppliersSpecificInformation,
       listOfSuppliersAllInformation
     );
-    console.log("BEST SUPPLIER LIST");
-    console.log(bestSupplierList);
-    console.log("END SUPPLIER LIST");
+    // console.log("BEST SUPPLIER LIST");
+    // console.log(bestSupplierList);
+    // console.log("END SUPPLIER LIST");
     if (index === 0) {
-      outputObject["under"] = [...bestSupplierList]            
+      outputObject["under"] = [...bestSupplierList];
       // console.log(outputObject["under"]);
-    }else{
-      outputObject["above"] = bestSupplierList
+    } else {
+      outputObject["above"] = [...bestSupplierList];
       // console.log(outputObject["above"]);
     }
   }
-
-  // console.log(outputObject);  
+  return outputObject;
+  // console.log(outputObject);
 }
 
 module.exports = {
