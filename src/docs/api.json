@@ -1,7 +1,7 @@
 {
   "openapi": "3.0.2",
   "info": {
-    "title": "BahanBaku RESTful API Documentation",
+    "title": "BahanbaKu RESTful API Documentation",
     "version": "1.0.0"
   },
   "servers": [
@@ -228,9 +228,14 @@
                               "type": "string"
                             },
                             "origin": {
-                              "type": "array",
-                              "items": {
-                                "type": "integer"
+                              "type": "object",
+                              "properties": {
+                                "lat": {
+                                  "type": "integer"
+                                },
+                                "lng": {
+                                  "type": "integer"
+                                }
                               }
                             },
                             "shipping": {
@@ -238,11 +243,14 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "supplierId": {
+                                  "id": {
                                     "type": "string"
                                   },
-                                  "shippingPrice": {
+                                  "cost": {
                                     "type": "integer"
+                                  },
+                                  "distance": {
+                                    "type": "number"
                                   }
                                 }
                               }
@@ -267,15 +275,20 @@
                     "username": "testing",
                     "email": "testing@gmail.com",
                     "picture": "https://storage.googleapis.com/bahanbaku/profile/eJXCDdzd.png",
-                    "origin": [-9.424724, 105.2290617],
+                    "origin": {
+                      "lat": -9.424724,
+                      "lng": 105.2290617
+                    },
                     "shipping": [
                       {
                         "id": "gJDNQCOC",
-                        "cost": 10000
+                        "cost": 10000,
+                        "distance": 5433
                       },
                       {
                         "id": "24SUZiRT",
-                        "cost": 15000
+                        "cost": 15000,
+                        "distance": 9051
                       }
                     ],
                     "bookmarks": ["pQLi6pat", "8cLv0cul"]
@@ -751,6 +764,201 @@
           },
           "401": {
             "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/Not-Found"
+          }
+        }
+      }
+    },
+    "/user/nearby-resto": {
+      "get": {
+        "summary": "Get nearby resto based on keyword",
+        "description": "Get nearby resto based on keyword",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "keyword",
+            "description": "Food name",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            },
+            "example": "pizza"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success get nearby resto",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "type": "boolean"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "results": {
+                      "type": "object",
+                      "properties": {
+                        "resto": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "restaurantName": {
+                                "type": "string"
+                              },
+                              "rating": {
+                                "type": "integer"
+                              },
+                              "userRatingTotal": {
+                                "type": "integer"
+                              },
+                              "location": {
+                                "type": "object",
+                                "properties": {
+                                  "lat": {
+                                    "type": "number"
+                                  },
+                                  "lng": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "example": {
+                  "success": true,
+                  "message": "success update supplier",
+                  "results": {
+                    "resto": [
+                      {
+                        "restaurantName": "Nasi Goreng Spesial Mas Kenthus",
+                        "rating": 5,
+                        "user_ratings_total": 12,
+                        "location": {
+                          "lat": -7.427965599999999,
+                          "lng": 109.2690586
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng AB (Abu Bakar)",
+                        "rating": 4.6,
+                        "user_ratings_total": 5,
+                        "location": {
+                          "lat": -7.385585799999999,
+                          "lng": 109.2237762
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng RW \"09\"",
+                        "rating": 4.3,
+                        "user_ratings_total": 15,
+                        "location": {
+                          "lat": -7.4166456,
+                          "lng": 109.2409477
+                        }
+                      },
+                      {
+                        "restaurantName": "NASI GORENG PAK GATOT",
+                        "rating": 4.6,
+                        "user_ratings_total": 13,
+                        "location": {
+                          "lat": -7.4210985,
+                          "lng": 109.2224129
+                        }
+                      },
+                      {
+                        "restaurantName": "Warung Nasi GORENG SELERA",
+                        "rating": 4.6,
+                        "user_ratings_total": 10,
+                        "location": {
+                          "lat": -7.4130718,
+                          "lng": 109.2452783
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng Mbah Ndut",
+                        "rating": 5,
+                        "user_ratings_total": 3,
+                        "location": {
+                          "lat": -7.4202162,
+                          "lng": 109.2566409
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi goreng mas wahyu",
+                        "rating": 5,
+                        "user_ratings_total": 1,
+                        "location": {
+                          "lat": -7.4132082,
+                          "lng": 109.2700826
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng ONA SATRIA",
+                        "rating": 4,
+                        "user_ratings_total": 19,
+                        "location": {
+                          "lat": -7.428670899999999,
+                          "lng": 109.2699799
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng \"Hasan\"",
+                        "rating": 4.6,
+                        "user_ratings_total": 14,
+                        "location": {
+                          "lat": -7.4232665,
+                          "lng": 109.2479597
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi goreng Jhon",
+                        "rating": 4.8,
+                        "user_ratings_total": 12,
+                        "location": {
+                          "lat": -7.4075223,
+                          "lng": 109.2317571
+                        }
+                      },
+                      {
+                        "restaurantName": "Nasi Goreng Mas Alex",
+                        "rating": 4.2,
+                        "user_ratings_total": 237,
+                        "location": {
+                          "lat": -7.4111628,
+                          "lng": 109.2454567
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Bad-Request"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "403": {
+            "$ref": "#/components/responses/Forbidden"
           },
           "404": {
             "$ref": "#/components/responses/Not-Found"
@@ -1336,7 +1544,7 @@
     "/ingredients": {
       "get": {
         "summary": "Get ingredients by name",
-        "description": "Get ingredient information by name from supplier and e-commerce",
+        "description": "Get ingredient information by name from supplier",
         "security": [
           {
             "bearerAuth": []
@@ -1354,7 +1562,7 @@
             "examples": {
               "multi value": {
                 "description": "Delimiter ',' , no space after ','",
-                "value": "minyak goreng,ayam,cabai merah"
+                "value": "gula,garam,susu"
               },
               "single value": {
                 "value": "minyak goreng"
@@ -1377,46 +1585,108 @@
                       "type": "string"
                     },
                     "results": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "ingredients": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "supplierId": {
+                      "type": "object",
+                      "properties": {
+                        "under": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "totalPrice": {
+                                "type": "integer"
+                              },
+                              "missingProduct": {
+                                "type": "array",
+                                "items": {
                                   "type": "string"
-                                },
-                                "supplierName": {
-                                  "type": "string"
-                                },
-                                "ingredientName": {
-                                  "type": "string"
-                                },
-                                "ingredientPrice": {
-                                  "type": "integer"
+                                }
+                              },
+                              "suppliers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "supplierId": {
+                                      "type": "string"
+                                    },
+                                    "shoppingCost": {
+                                      "type": "integer"
+                                    },
+                                    "supplierName": {
+                                      "type": "string"
+                                    },
+                                    "supplierContact": {
+                                      "type": "string"
+                                    },
+                                    "products": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "productName": {
+                                            "type": "string"
+                                          },
+                                          "productPrice": {
+                                            "type": "integer"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
                                 }
                               }
                             }
-                          },
-                          "shippingPrice": {
-                            "type": "array",
-                            "items": {
-                              "type": "object",
-                              "properties": {
-                                "id": {
+                          }
+                        },
+                        "above": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "totalPrice": {
+                                "type": "integer"
+                              },
+                              "missingProduct": {
+                                "type": "array",
+                                "items": {
                                   "type": "string"
-                                },
-                                "shippingCost": {
-                                  "type": "integer"
+                                }
+                              },
+                              "suppliers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "supplierId": {
+                                      "type": "string"
+                                    },
+                                    "shoppingCost": {
+                                      "type": "integer"
+                                    },
+                                    "supplierName": {
+                                      "type": "string"
+                                    },
+                                    "supplierContact": {
+                                      "type": "string"
+                                    },
+                                    "products": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "productName": {
+                                            "type": "string"
+                                          },
+                                          "productPrice": {
+                                            "type": "integer"
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
                                 }
                               }
                             }
-                          },
-                          "totalPrice": {
-                            "type": "integer"
                           }
                         }
                       }
@@ -1424,60 +1694,50 @@
                   }
                 },
                 "example": {
-                  "success": true,
-                  "message": "success get ingredients",
-                  "results": [
-                    {
-                      "ingredients": [
-                        {
-                          "supplierId": "pQLi6pat",
-                          "supplierName": "Toko Toni",
-                          "ingredientName": "Minyak goreng 1 liter",
-                          "ingredientPrice": 20000
-                        },
-                        {
-                          "supplierId": "pQLi6pat",
-                          "supplierName": "Toko Toni",
-                          "ingredientName": "Telur ayam 2 ons",
-                          "ingredientPrice": 13000
-                        }
-                      ],
-                      "shippingPrice": [
-                        {
-                          "id": "pQLi6pat",
-                          "shippingCost": 13000
-                        }
-                      ],
-                      "totalPrice": 46000
-                    },
-                    {
-                      "ingredients": [
-                        {
-                          "supplierId": "pQLi6pat",
-                          "supplierName": "Toko Toni",
-                          "ingredientName": "Minyak goreng 1 liter",
-                          "ingredientPrice": 20000
-                        },
-                        {
-                          "supplierId": "8cLv0cul",
-                          "supplierName": "Toko Budi",
-                          "ingredientName": "Telur ayam 2 ons",
-                          "ingredientPrice": 9000
-                        }
-                      ],
-                      "shippingPrice": [
-                        {
-                          "id": "pQLi6pat",
-                          "shippingCost": 13000
-                        },
-                        {
-                          "id": "8cLv0cul",
-                          "shippingCost": 10000
-                        }
-                      ],
-                      "totalPrice": 52000
-                    }
-                  ]
+                  "status": true,
+                  "message": "success predict ingredients",
+                  "results": {
+                    "under": [
+                      {
+                        "suppliers": [
+                          {
+                            "supplierId": "Ap5xgtVlAGoc",
+                            "shippingCost": 9000,
+                            "supplierName": "Udin Shop",
+                            "supplierContact": "081234567890",                            
+                            "products": [
+                              {
+                                "productName": "Alini Gula Halus 500gr",
+                                "productPrice": 20000
+                              }
+                            ]
+                          }
+                        ],
+                        "missingProduct": ["babi"],
+                        "totalPrice": 29000
+                      }
+                    ],
+                    "above": [
+                      {
+                        "suppliers": [
+                          {
+                            "supplierId": "cRw3knppcqSt",
+                            "shippingCost": 41060,
+                            "supplierName": "Irvan Shop",
+                            "supplierContact": "081234567890",                            
+                            "products": [
+                              {
+                                "productName": "Alini Gula Halus 500gr",
+                                "productPrice": 20000
+                              }
+                            ]
+                          }
+                        ],
+                        "missingProduct": ["babi"],
+                        "totalPrice": 61060
+                      }
+                    ]
+                  }
                 }
               }
             }
@@ -1532,19 +1792,23 @@
                                 "type": "string"
                               },
                               "origin": {
-                                "type": "array",
-                                "items": {
-                                  "type": "number",
-                                  "format": "float"
+                                "type": "object",
+                                "properties": {
+                                  "lat": {
+                                    "type": "number"
+                                  },
+                                  "lng": {
+                                    "type": "number"
+                                  }
                                 }
                               },
                               "address": {
                                 "type": "string"
                               },
-                              "address-obj": {
+                              "addressObj": {
                                 "type": "object",
                                 "properties": {
-                                  "ward": {
+                                  "subDistrict": {
                                     "type": "string"
                                   },
                                   "districts": {
@@ -1556,7 +1820,7 @@
                                   "province": {
                                     "type": "string"
                                   },
-                                  "zip-code": {
+                                  "zipCode": {
                                     "type": "integer"
                                   }
                                 }
@@ -1594,14 +1858,17 @@
                       {
                         "id": "gJDNQCOC",
                         "name": "Warung Toni",
-                        "origin": [-7.424724, 109.2290617],
+                        "origin": {
+                          "lat": -7.424724,
+                          "lng": 109.2290617
+                        },
                         "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
-                        "address-obj": {
-                          "sub-district": "Purwokerto Wetan",
+                        "addressObj": {
+                          "subDistrict": "Purwokerto Wetan",
                           "district": "Purwokerto Timur",
                           "city": "Banyumas",
                           "province": "Jawa Tengah",
-                          "zip-code": "53111"
+                          "zipCode": "53111"
                         },
                         "product": [
                           {
@@ -1708,19 +1975,23 @@
                           "type": "string"
                         },
                         "origin": {
-                          "type": "array",
-                          "items": {
-                            "type": "number",
-                            "format": "float"
+                          "type": "object",
+                          "properties": {
+                            "lat": {
+                              "type": "number"
+                            },
+                            "lng": {
+                              "type": "number"
+                            }
                           }
                         },
                         "address": {
                           "type": "string"
                         },
-                        "address-obj": {
+                        "addressObj": {
                           "type": "object",
                           "properties": {
-                            "ward": {
+                            "subDistrict": {
                               "type": "string"
                             },
                             "districts": {
@@ -1732,7 +2003,7 @@
                             "province": {
                               "type": "string"
                             },
-                            "zip-code": {
+                            "zipCode": {
                               "type": "integer"
                             }
                           }
@@ -1764,14 +2035,17 @@
                   "results": {
                     "supplier": {
                       "name": "Warung Toni",
-                      "origin": [-7.424724, 109.2290617],
+                      "origin": {
+                        "lat": -7.424724,
+                        "lng": 109.2290617
+                      },
                       "address": "Jl. Graha Timur 5, Purwokerto Wetan, Kec. Purwokerto Tim., Kabupaten Banyumas, Jawa Tengah",
-                      "address-obj": {
-                        "sub-district": "Purwokerto Wetan",
+                      "addressObj": {
+                        "subDistrict": "Purwokerto Wetan",
                         "district": "Purwokerto Timur",
                         "city": "Banyumas",
                         "province": "Jawa Tengah",
-                        "zip-code": "53111"
+                        "zipCode": "53111"
                       },
                       "product": [
                         {
