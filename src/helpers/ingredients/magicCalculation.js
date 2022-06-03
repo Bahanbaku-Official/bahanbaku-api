@@ -83,7 +83,8 @@ function supplierHasAtLeastOneIngredient(supplier) {
 function magicCalculation(
   listIngredientArray,
   listSuppliersIngredientsData,
-  listSuppliersData
+  listSuppliersData,
+  userShippingCost
 ) {
   // This is where the magic happen
   listSupplierIngredientsData = [...listSuppliersIngredientsData];

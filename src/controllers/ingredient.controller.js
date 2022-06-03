@@ -65,6 +65,7 @@ const getIngredient = async (req, res, next) => {
         ingredients,
         supplierSpecificInformations,
         supplierAllInformations,
+        shippings,
       )
 
       if (i === 0) {
