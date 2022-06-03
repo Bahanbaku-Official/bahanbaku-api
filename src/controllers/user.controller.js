@@ -235,7 +235,6 @@ const updateLocation = async (req, res, next) => {
 
 
   } catch (error) {
-    console.log(error);
     next(error);
   }
 }
@@ -284,7 +283,6 @@ const uploadPicture = async (req, res, next) => {
       })
       .end(buffer);
   } catch (error) {
-    console.log(error);
     next(error);
   }
 }
