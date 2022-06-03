@@ -3,6 +3,7 @@ const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 swaggerDocument = require("./src/docs/api.json");
 const { Datastore } = require("@google-cloud/datastore");
+const bodyParser = require('body-parser');
 
 require("dotenv").config();
 
@@ -27,6 +28,7 @@ app.get("/", (_, res) => {
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); 
 
 app.use(cors());
 
