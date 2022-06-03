@@ -13,12 +13,13 @@ const register = async (req, res, next) => {
     namespace: "Dev",
     path: ["user"],
   });
+  const id = nanoid();
 
   const entity = {
     key,
     data: {
       ...req.body,
-      id: nanoid(),
+      id,
       createdAt: new Date().toJSON(),
       updatedAt: new Date().toJSON(),
       picture: "",
@@ -45,11 +46,13 @@ const register = async (req, res, next) => {
   }
   
   try {
-    const results = await datastore.save(entity);
+    await datastore.save(entity);
     return res.status(200).json({
       status: true,
       message: 'user successfully created',
-      results,
+      results : {
+        id,
+      },
     })
   } catch (err) {
     next(error);
