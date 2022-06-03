@@ -194,6 +194,16 @@ function magicCalculation(
           isIngredientExist =
             listSupplierIngredientPrice[ingredientMissingIndex].length > 0;          
           if (isIngredientExist) {
+            
+            // Remove Missing Product from supplier
+            for (let index = 0; index < supplier["missingProduct"].length; index++) {
+              const productMissing = supplier["missingProduct"][index];
+              if(productMissing === supplier["missingProduct"][j]){
+                supplier["missingProduct"].splice(index,1)
+                break
+              }
+            }
+
             // Fill supplier's missing ingredient with best ingredient
             productData =
               listSupplierIngredientPrice[ingredientMissingIndex][
