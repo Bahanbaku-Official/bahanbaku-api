@@ -1,7 +1,7 @@
 const datastore = require("../database/datastore");
 const { getSupplierSpecificInformation, getSupplierAllInformation, magicCalculation } = require("../helpers/ingredients/magicCalculation");
 
-const getIngredient = async (req, res) => {
+const getIngredient = async (req, res, next) => {
   const { id } = req.user;
   const { search } = req.query;
   const querySupplier = datastore.createQuery("Dev", "supplier");
@@ -16,10 +16,8 @@ const getIngredient = async (req, res) => {
     const profile = await datastore.runQuery(queryProfile);
 
     if (suppliers[0].length === 0 || profile[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,supplier or profile not found');
+      return;
     }
 
     const ingredients = search.split(',');
@@ -82,11 +80,7 @@ const getIngredient = async (req, res) => {
       results: outputObject,
     })
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 

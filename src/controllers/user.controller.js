@@ -7,7 +7,7 @@ const objectToDatastoreObject = require('../helpers/objectDatastoreConverter');
 const verifyUserExist = require('../helpers/userExistenceVerifier');
 const { default: axios } = require('axios');
 
-const register = async (req, res) => {
+const register = async (req, res, next) => {
   const { email } = req.body;
   const key = datastore.key({
     namespace: "Dev",
@@ -40,10 +40,8 @@ const register = async (req, res) => {
   const result = await datastore.runQuery(query);
 
   if (result[0].length > 0) {
-    return res.status(409).json({
-      status: false,
-      message: 'Email has already registered',
-    })
+    next('409,email already registered');
+    return;
   }
   
   try {
@@ -54,14 +52,11 @@ const register = async (req, res) => {
       results,
     })
   } catch (err) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const login = async (req, res) => {
+const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   const query = datastore
@@ -74,10 +69,8 @@ const login = async (req, res) => {
     const result = await datastore.runQuery(query);
 
     if (result[0].length === 0) {
-      return res.status(401).json({
-        status: false,
-        message: 'wrong username / password',
-      })
+      next('401,wrong credential');
+      return;
     }
 
     const payload = {
@@ -91,14 +84,11 @@ const login = async (req, res) => {
       token,
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const profile = async (req, res) => {
+const profile = async (req, res, next) => {
   const { id } = req.user;
 
   const query = datastore
@@ -110,10 +100,8 @@ const profile = async (req, res) => {
     const result = await datastore.runQuery(query);
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Not Found',
-      })
+      next('404,user not found');
+      return;
     }
 
     return res.status(200).json({
@@ -122,14 +110,11 @@ const profile = async (req, res) => {
       results: result[0][0],
     })
   } catch (err) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { email, username, password, newPassword } = req.body;
   let result;
 
@@ -143,16 +128,11 @@ const update = async (req, res) => {
     result = await datastore.runQuery(query);
 
     if (result[0].length === 0) {
-      return res.status(401).json({
-        status: false,
-        message: 'wrong username / password',
-      })
+      next('404,user not found or wrong credential');
+      return;
     }
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 
   oldData = parseUserData(datastore, result);
@@ -178,15 +158,11 @@ const update = async (req, res) => {
       },
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const updateLocation = async (req, res) => {
+const updateLocation = async (req, res, next) => {
   const { id } = req.user;
   const { lat, lng } = req.body.location;
   const METRIX_API_KEY = process.env.MAPS_METRIX_DISTANCE_API_KEY;
@@ -201,10 +177,8 @@ const updateLocation = async (req, res) => {
     const result = await verifyUserExist(datastore, id);
     if (result[0].length > 0) {
       if (result[0].length === 0) {
-        return res.status(404).json({
-          status: false,
-          message: '404 Resource Not Found',
-        })
+        next('404,user not found');
+        return;
       }
 
       userData = parseUserData(datastore, result);
@@ -262,25 +236,19 @@ const updateLocation = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const uploadPicture = async (req, res) => {
+const uploadPicture = async (req, res, next) => {
   const { id } = req.user;
   bucketName = "bahanbaku-assets";
 
   try {
     const result = await verifyUserExist(datastore, id);
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,user not found');
+      return;
     }
     
     const bucket = cloudStorage.bucket(bucketName);
@@ -317,14 +285,11 @@ const uploadPicture = async (req, res) => {
       .end(buffer);
   } catch (error) {
     console.log(error);
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const _delete = async (req, res) => {
+const _delete = async (req, res, next) => {
   const { id } = req.params;
 
   const result = await verifyUserExist(datastore, id);
@@ -332,10 +297,8 @@ const _delete = async (req, res) => {
     if (!result) throw 'query error';
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,user not found');
+      return;
     }
 
     datastoreId = result[0][0][datastore.KEY]["id"];
@@ -355,15 +318,11 @@ const _delete = async (req, res) => {
 
 
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const addBookmark = async (req, res) => {
+const addBookmark = async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
 
@@ -372,10 +331,8 @@ const addBookmark = async (req, res) => {
     if (!result) throw 'query error';
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,user not found');
+      return;
     }
 
     oldData = parseUserData(datastore, result);
@@ -398,15 +355,11 @@ const addBookmark = async (req, res) => {
     })
 
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const deleteBookmark = async (req, res) => {
+const deleteBookmark = async (req, res, next) => {
   const { id } = req.params;
   const { id: userId } = req.user;
 
@@ -447,15 +400,11 @@ const deleteBookmark = async (req, res) => {
     })
 
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const getNearbyRestaurant = async (req, res) => {
+const getNearbyRestaurant = async (req, res, next) => {
   const { keyword } = req.query;
   const { id } = req.user;
   const PLACES_API_KEY = process.env.MAPS_PLACES_API_KEY
@@ -463,10 +412,8 @@ const getNearbyRestaurant = async (req, res) => {
   try {
     const result = await verifyUserExist(datastore, id);
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,user not found');
+      return;
     }
 
     const userData = parseUserData(datastore, result);
@@ -499,11 +446,7 @@ const getNearbyRestaurant = async (req, res) => {
       results: restaurants,
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 

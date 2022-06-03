@@ -4,7 +4,7 @@ const objectToDatastoreObject = require("../helpers/objectDatastoreConverter");
 const parseRecipeData = require("../helpers/recipeDataParser");
 const verifyRecipeExist = require("../helpers/recipeExistenceVerifier");
 
-const findAll = async (req, res) => {
+const findAll = async (req, res, next) => {
   const { search, featured, new: latest } = req.query;
 
   if (search) {
@@ -37,24 +37,19 @@ const findAll = async (req, res) => {
       results: result[0],
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const findById = async (req, res) => {
+const findById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
     result = await verifyRecipeExist(datastore, id);
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,recipe not found');
+      return;
     }
 
     oldData = parseRecipeData(datastore, result);
@@ -69,16 +64,11 @@ const findById = async (req, res) => {
       results: oldData,
     })
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-      error,
-    })
+    next(error);
   }
 }
 
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   const { title } = req.body;
 
   const key = datastore.key({
@@ -105,10 +95,8 @@ const create = async (req, res) => {
   const result = await datastore.runQuery(query);
 
   if (result[0].length > 0) {
-    return res.status(409).json({
-      status: false,
-      message: 'Recipe has already exist',
-    })
+    next('409,recipe already exist');
+    return;
   }
 
   try {
@@ -121,24 +109,19 @@ const create = async (req, res) => {
       },
     })
   } catch (err) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { id } = req.params;
   const recipe = req.body;
 
   try {
     const result = await verifyRecipeExist(datastore, id);
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,recipe not found');
+      return;
     }
 
     const oldData = parseRecipeData(datastore, result);
@@ -160,24 +143,19 @@ const update = async (req, res) => {
       },
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const _delete = async (req, res) => {
+const _delete = async (req, res, next) => {
   const { id } = req.params;
 
   try {
     const result = await verifyRecipeExist(datastore, id);
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,recipe not found');
+      return;
     }
 
     const datastoreId = result[0][0][datastore.KEY].id;
@@ -197,10 +175,7 @@ const _delete = async (req, res) => {
     })
 
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 

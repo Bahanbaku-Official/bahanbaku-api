@@ -3,7 +3,7 @@ const cors = require("cors");
 const swaggerUi = require("swagger-ui-express");
 swaggerDocument = require("./src/docs/api.json");
 const { Datastore } = require("@google-cloud/datastore");
-const bodyParser = require('body-parser');
+const errorHandler = require('./src/helpers/errorHandler');
 
 require("dotenv").config();
 
@@ -36,6 +36,8 @@ app.use('/user', user);
 app.use('/recipe', recipe);
 app.use('/supplier', supplier);
 app.use('/ingredients', ingredient);
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 8000;
 app.listen(PORT, () => {

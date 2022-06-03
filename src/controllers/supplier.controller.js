@@ -4,7 +4,7 @@ const objectToDatastoreObject = require("../helpers/objectDatastoreConverter");
 const parseRecipeData = require("../helpers/recipeDataParser");
 const verifySupplierExist = require("../helpers/supplierExistenceVerifier");
 
-const findAll = async (_, res) => {
+const findAll = async (_, res, next) => {
   const query = datastore.createQuery("Dev", "supplier");
 
   try {
@@ -15,24 +15,19 @@ const findAll = async (_, res) => {
       results: result[0],
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const findById = async (req, res) => {
+const findById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
     result = await verifySupplierExist(datastore, id);
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,supplier not found');
+      return;
     }
 
     return res.status(200).json({
@@ -41,14 +36,11 @@ const findById = async (req, res) => {
       results: result[0][0],
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const create = async (req, res) => {
+const create = async (req, res, next) => {
   const { name } = req.body;
 
   const query = datastore
@@ -58,10 +50,8 @@ const create = async (req, res) => {
   try {
     const result = await datastore.runQuery(query);
     if (result[0].length > 0) {
-      return res.status(409).json({
-        status: false,
-        message: 'Supplier has already exist',
-      })
+      next('409,supplier already exist');
+      return;
     }
 
     const key = datastore.key({
@@ -87,24 +77,19 @@ const create = async (req, res) => {
       },
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const update = async (req, res) => {
+const update = async (req, res, next) => {
   const { id } = req.params;
   const supplier = req.body;
 
   try {
     const result = await verifySupplierExist(datastore, id);
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,supplier not found');
+      return;
     }
 
     const oldData = parseRecipeData(datastore, result);
@@ -124,24 +109,19 @@ const update = async (req, res) => {
       },
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
-const _delete = async (req, res) => {
+const _delete = async (req, res, next) => {
   const { id } = req.params;
 
   try {
     const result = await verifySupplierExist(datastore, id);
 
     if (result[0].length === 0) {
-      return res.status(404).json({
-        status: false,
-        message: '404 Resource Not Found',
-      })
+      next('404,supplier not found');
+      return;
     }
 
     const datastoreId = result[0][0][datastore.KEY].id;
@@ -160,10 +140,7 @@ const _delete = async (req, res) => {
       },
     })
   } catch (error) {
-    return res.status(400).json({
-      status: false,
-      message: '400 Bad Request',
-    })
+    next(error);
   }
 }
 
