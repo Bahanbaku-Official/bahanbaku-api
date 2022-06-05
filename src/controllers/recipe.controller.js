@@ -35,7 +35,9 @@ const findAll = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "success get recipes",
-      results: result[0],
+      results: {
+        recipes: result[0],
+      },
     })
   } catch (error) {
     next(error);
@@ -62,7 +64,9 @@ const findById = async (req, res, next) => {
     return res.status(200).json({
       status: true,
       message: 'success get recipe',
-      results: oldData,
+      results: {
+        recipe: oldData,
+      },
     })
   } catch (error) {
     next(error);

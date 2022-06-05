@@ -12,7 +12,9 @@ const findAll = async (_, res, next) => {
     return res.status(200).json({
       success: true,
       message: "success get suppliers",
-      results: result[0],
+      results: {
+        suppliers: result[0],
+      },
     })
   } catch (error) {
     next(error);
@@ -33,7 +35,9 @@ const findById = async (req, res, next) => {
     return res.status(200).json({
       status: true,
       message: 'success get supplier by id',
-      results: result[0][0],
+      results: {
+        supplier: result[0][0],
+      },
     })
   } catch (error) {
     next(error);
