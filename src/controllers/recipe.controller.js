@@ -3,6 +3,7 @@ const datastore = require("../database/datastore");
 const objectToDatastoreObject = require("../helpers/objectDatastoreConverter");
 const parseRecipeData = require("../helpers/recipeDataParser");
 const verifyRecipeExist = require("../helpers/recipeExistenceVerifier");
+const titleCase = require('../helpers/titleCaseConverter');
 
 const findAll = async (req, res, next) => {
   const { search, featured, new: latest } = req.query;
