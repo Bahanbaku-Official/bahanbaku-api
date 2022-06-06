@@ -22,7 +22,7 @@ const register = async (req, res, next) => {
       id,
       createdAt: new Date().toJSON(),
       updatedAt: new Date().toJSON(),
-      picture: "",
+      picture: "https://storage.googleapis.com/bahanbaku-assets/user/blank-profile-picture.png",
       origin: {
         lat: 0,
         lng: 0,
