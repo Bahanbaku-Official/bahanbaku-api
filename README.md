@@ -10,15 +10,15 @@ An app which connects Android and Machine Learning for BahanbaKu
 - Backend : express
 - API Docs : swagger-ui-express
 - NoSQL : @google-cloud/datastore
-- Storage : @google-cloud/datastore
+- Storage : @google-cloud/storage
 - CORS : cors
 
 # GCP Resource Used
-- Google Compute Engine
-- Cloud DataStore
-- Cloud Storage
-- Distance Matrix API
-- Places API
+- VMs : Google Compute Engine
+- NoSQL : Cloud DataStore
+- Storage : Cloud Storage
+- Distance between : Distance Matrix API
+- Nearby restaurant : Places API
 
 ## Installation
 Requires Node.JS v14+ to run
