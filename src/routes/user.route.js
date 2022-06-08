@@ -3,16 +3,22 @@ const user = require('../controllers/user.controller');
 const jwtMiddleware = require('../middlewares/jwtAuth');
 const isAdmin = require('../middlewares/isAdmin');
 const multer = require('../config/multer');
+const { 
+  registerRules,
+  loginRules, 
+  locationRules, 
+  validate } 
+= require('../helpers/validator');
 
-router.post('/register', user.register);
+router.post('/register',registerRules(), validate, user.register);
 
-router.post('/login', user.login);
+router.post('/login',loginRules(), validate, user.login);
 
 router.get('/profile',jwtMiddleware, user.profile);
 
 router.put('/update',jwtMiddleware, user.update);
 
-router.put('/update-location',jwtMiddleware, user.updateLocation);
+router.put('/update-location',locationRules(), validate, jwtMiddleware, user.updateLocation);
 
 router.post('/upload-picture',jwtMiddleware, multer.single('image'), user.uploadPicture);
 

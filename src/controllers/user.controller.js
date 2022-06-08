@@ -212,6 +212,10 @@ const updateLocation = async (req, res, next) => {
       )
 
       const distancesArray = axiosResponse.data.rows[0].elements;
+      if (distancesArray.some(obj => obj.status === 'NOT_FOUND') || distancesArray.some(obj => obj.status === 'ZERO_RESULTS')) {
+        next('409,place or route not found');
+        return;
+      }
       distancesArray.forEach((data, index) => {
         shippings[index].distance = data.distance.value;
         if (data.distance <= distanceLimit) {
