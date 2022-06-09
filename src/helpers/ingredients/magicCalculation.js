@@ -240,7 +240,7 @@ function magicCalculation(
                 productData.productPrice + shippingCost;
             } else {
               // If supplier is exist
-              completeSupplier["suppliers"][supplierExistIndex].push(
+              completeSupplier["suppliers"][supplierExistIndex]["products"].push(
                 productData
               );
               completeSupplier["totalPrice"] += productData.productPrice;
