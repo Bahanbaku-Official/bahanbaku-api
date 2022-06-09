@@ -185,7 +185,7 @@ function magicCalculation(
 
       while (totalSupplierConcurrency < maxSupplierConcurrency) {
         completeSupplier = {
-          suppliers: [supplier],
+          suppliers: [{...supplier}],
           totalPrice: currentSupplierTotalPrice,
         };
         for (let j = 0; j < emptyIngredientCount; j++) {
@@ -193,8 +193,7 @@ function magicCalculation(
           // If ingredient not exist anywhere
           isIngredientExist =
             listSupplierIngredientPrice[ingredientMissingIndex].length > 0;          
-          if (isIngredientExist) {
-            
+          if (isIngredientExist) {          
             // Remove Missing Product from supplier
             for (let index = 0; index < supplier["missingProduct"].length; index++) {
               const productMissing = supplier["missingProduct"][index];
