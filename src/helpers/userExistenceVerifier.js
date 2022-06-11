@@ -1,6 +1,6 @@
 async function verifyUserExist(datastore, id) {
   const query = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("id", "=", id)
     .limit(1);
 

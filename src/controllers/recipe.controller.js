@@ -10,24 +10,24 @@ const findAll = async (req, res, next) => {
 
   if (search) {
     query = datastore
-      .createQuery("Dev", "recipe")
+      .createQuery("Prod", "recipe")
       .filter("title", ">=", titleCase(search));
   } else if (featured === "1") {
     query = datastore
-      .createQuery("Dev", "recipe")
+      .createQuery("Prod", "recipe")
       .order("createdAt", {
         descending: true,
       })
       .limit(5);
   } else if (latest === "1") {
     query = datastore
-      .createQuery("Dev", "recipe")
+      .createQuery("Prod", "recipe")
       .order("totalViews", {
         descending: true,
       })
       .limit(5);
   } else {
-    query = datastore.createQuery("Dev", "recipe");
+    query = datastore.createQuery("Prod", "recipe");
   }
 
   try {
@@ -73,7 +73,7 @@ const create = async (req, res, next) => {
   const { title } = req.body;
 
   const key = datastore.key({
-    namespace: "Dev",
+    namespace: "Prod",
     path: ["recipe"],
   });
 
@@ -89,7 +89,7 @@ const create = async (req, res, next) => {
   }
 
   const query = datastore
-    .createQuery("Dev", "recipe")
+    .createQuery("Prod", "recipe")
     .filter("title", "=", title);
 
   const result = await datastore.runQuery(query);
@@ -160,7 +160,7 @@ const _delete = async (req, res, next) => {
 
     const datastoreId = result[0][0][datastore.KEY].id;
     const key = datastore.key({
-      namespace: "Dev",
+      namespace: "Prod",
       path: ["recipe", parseInt(datastoreId, 10)],
     });
 

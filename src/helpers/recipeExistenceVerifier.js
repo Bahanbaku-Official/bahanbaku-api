@@ -1,6 +1,6 @@
 async function verifyRecipeExist(datastore, id) {
   const query = datastore
-    .createQuery("Dev", "recipe")
+    .createQuery("Prod", "recipe")
     .filter("id", "=", id)
     .limit(1);
 

@@ -1,6 +1,6 @@
 async function verifySupplierExist(datastore, id) {
   const query = datastore
-    .createQuery("Dev", "supplier")
+    .createQuery("Prod", "supplier")
     .filter("id", "=", id)
     .limit(1);
 

@@ -4,9 +4,9 @@ const { getSupplierSpecificInformation, getSupplierAllInformation, magicCalculat
 const getIngredient = async (req, res, next) => {
   const { id } = req.user;
   const { search } = req.query;
-  const querySupplier = datastore.createQuery("Dev", "supplier");
+  const querySupplier = datastore.createQuery("Prod", "supplier");
   const queryProfile = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("id", "=", id)
     .limit(1);
   const distanceLimit = 50000;

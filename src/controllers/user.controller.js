@@ -10,7 +10,7 @@ const { default: axios } = require('axios');
 const register = async (req, res, next) => {
   const { email } = req.body;
   const key = datastore.key({
-    namespace: "Dev",
+    namespace: "Prod",
     path: ["user"],
   });
   const id = nanoid();
@@ -35,7 +35,7 @@ const register = async (req, res, next) => {
   }
 
   const query = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("email", "=", email);
 
   const result = await datastore.runQuery(query);
@@ -63,7 +63,7 @@ const login = async (req, res, next) => {
   const { email, password } = req.body;
 
   const query = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("email", "=", email)
     .filter("password", "=", password)
     .limit(1);
@@ -95,7 +95,7 @@ const profile = async (req, res, next) => {
   const { id } = req.user;
 
   const query = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("id", "=", id)
     .limit(1);
 
@@ -122,7 +122,7 @@ const update = async (req, res, next) => {
   let result;
 
   const query = datastore
-    .createQuery("Dev", "user")
+    .createQuery("Prod", "user")
     .filter("id", "=", req.user.id)
     .filter("password", "=", password)
     .limit(1);
@@ -190,7 +190,7 @@ const updateLocation = async (req, res, next) => {
       userOrigin = `${lat},${lng}`;
 
       const suppliers = await datastore.runQuery(
-        datastore.createQuery("Dev", "supplier")
+        datastore.createQuery("Prod", "supplier")
       );
       shippings = [];
       supplierOriginArray = [];
@@ -308,7 +308,7 @@ const _delete = async (req, res, next) => {
 
     datastoreId = result[0][0][datastore.KEY]["id"];
     const key = datastore.key({
-      namespace: "Dev",
+      namespace: "Prod",
       path: ["user", parseInt(datastoreId, 10)],
     });
 

@@ -5,7 +5,7 @@ const parseRecipeData = require("../helpers/recipeDataParser");
 const verifySupplierExist = require("../helpers/supplierExistenceVerifier");
 
 const findAll = async (_, res, next) => {
-  const query = datastore.createQuery("Dev", "supplier");
+  const query = datastore.createQuery("Prod", "supplier");
 
   try {
     const result = await datastore.runQuery(query);
@@ -44,7 +44,7 @@ const create = async (req, res, next) => {
   const { name } = req.body;
 
   const query = datastore
-    .createQuery("Dev", "supplier")
+    .createQuery("Prod", "supplier")
     .filter("name", "=", name);
   
   try {
@@ -55,7 +55,7 @@ const create = async (req, res, next) => {
     }
 
     const key = datastore.key({
-      namespace: "Dev",
+      namespace: "Prod",
       path: ["supplier"],
     });
     const entity = {
@@ -126,7 +126,7 @@ const _delete = async (req, res, next) => {
 
     const datastoreId = result[0][0][datastore.KEY].id;
     const key = datastore.key({
-      namespace: "Dev",
+      namespace: "Prod",
       path: ["supplier", parseInt(datastoreId, 10)],
     });
 

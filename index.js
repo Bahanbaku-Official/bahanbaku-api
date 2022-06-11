@@ -12,10 +12,6 @@ const recipe = require('./src/routes/recipe.route');
 const supplier = require('./src/routes/supplier.route');
 const ingredient = require('./src/routes/ingredient.route');
 
-const datastore = new Datastore({
-  projectId: process.env.GCP_PROJECT_ID,
-  keyFilename: process.env.DATASTORE_DEV_API_KEY,
-});
 
 const app = express();
 
