@@ -84,7 +84,6 @@ const create = async (req, res, next) => {
       id: nanoid(),
       createdAt: new Date().toJSON(),
       updatedAt: new Date().toJSON(),
-      rating: 0.0,
       totalViews: 0,
     }
   }
