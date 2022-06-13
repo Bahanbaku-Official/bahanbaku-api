@@ -204,10 +204,10 @@ function magicCalculation(
             }
 
             // Fill supplier's missing ingredient with best ingredient
-            productData =
-              listSupplierIngredientPrice[ingredientMissingIndex][
-                productListIndex[j]
-              ];
+            oriProductData = listSupplierIngredientPrice[ingredientMissingIndex][
+              productListIndex[j]
+            ];
+            productData = {...oriProductData}
 
             newSupplierId = productData["supplierId"];
             newSupplierName = productData["supplierName"];
